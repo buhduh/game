@@ -1,0 +1,7 @@
+*.bak
+*.sw[a-z]
+bin/
+tags
+build/
+lib/
+assets/
