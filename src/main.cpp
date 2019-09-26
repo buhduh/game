@@ -1,4 +1,9 @@
-#include <iostream>
+#include "platform.hpp"
+
 int main(void) {
-	std::cout << "hello" << std::endl;
+	Window *window = createWindow();
+	while(!shouldCloseWindow(window)) {
+		pollEvents();
+	}
+	destroyWindow(window);
 }

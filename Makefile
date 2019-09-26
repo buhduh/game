@@ -1,10 +1,19 @@
 #TODO Really need to sort these flags out
 
-CFLAGS = -std=c++17 -I$(VULKAN_SDK_PATH)/include -Iinclude -I$(HOME)/include -DDEBUG
-LDFLAGS = -L$(VULKAN_SDK_PATH)/lib `pkg-config --static --libs glfw3` -lvulkan
+CFLAGS = -std=c++17 -I$(VULKAN_SDK)/include -Iinclude -I$(HOME)/include -DDEBUG
+LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan
+
+ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
+
+#this probably won't work for windows...
+ifeq ($(shell uname), Linux)
+PLATFORM_SRC = src/platform/linux_platform.cpp
+endif
 
 #main is a special snowflake, mostly for testing and the main function weirdness
-ALL_SRC = $(shell find src -name "*.cpp")
+TEMP_ALL_SRC = $(shell find src -name "*.cpp")
+#probably a better way to do this, but meh
+ALL_SRC = $(filter-out $(ALL_PLATFORM_SRC), $(TEMP_ALL_SRC)) $(PLATFORM_SRC)
 SRC = $(filter-out src/main.cpp, $(ALL_SRC))
 ALL_OBJ = $(patsubst src/%.cpp, build/%.o, $(ALL_SRC))
 OBJ = $(patsubst src/%.cpp, build/%.o, $(SRC))
@@ -44,7 +53,7 @@ $(TEST_OBJ): build/test_%.o: test/%.cpp
 shaders: $(BUILD_DIRS) $(SHADER_SPV)	
 
 $(SHADER_SPV): assets/shaders/%.spv: shaders/%
-	$(VULKAN_SDK_PATH)/bin/glslangValidator -V -o $@ $^
+	$(VULKAN_SDK)/bin/glslangValidator -V -o $@ $^
 
 $(EXE): $(ALL_OBJ)
 	g++ -g $(CFLAGS) -o $@ $^ $(LDFLAGS)
