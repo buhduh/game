@@ -1,6 +1,6 @@
-#include "platform/linux_platform.hpp"
+#include <stdlib.h>
 
-#include <iostream>
+#include "platform/linux_platform.hpp"
 
 Window* createWindow() {
 	glfwInit();
@@ -25,4 +25,8 @@ void destroyWindow(Window *window) {
 
 void pollEvents() {
 	glfwPollEvents();
+}
+
+void *allocatePlatformMemory(size_t numBytes) {
+	return malloc(numBytes);
 }
