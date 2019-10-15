@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 	std::string line;
 	glm::vec3 vertBuffer[MAX_VERTS] = {glm::vec3(0)};
 	//not sure if this needs to be bigger
-	VertexIndex indexBuffer[MAX_VERTS] = {0};
+	vertexindex_t indexBuffer[MAX_VERTS] = {0};
 	VertexTracker vTracker = VertexTracker{
 		vIndex: 0,
 		vBuffer: vertBuffer,

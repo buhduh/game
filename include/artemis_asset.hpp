@@ -5,23 +5,29 @@
 #include <map>
 
 #include "artemis_memory.hpp"
-#include "artemis_entity.hpp"
+#include "artemis_mesh.hpp"
 
-#define MAX_ASSET_NAME 64
+//When this fills up will begin ejecting older meshes that
+//aren't in use
+//these must match, change them concurrently
+#define MAX_CONCURRENT_MESHES UINT16_MAX
+typedef uint16_t meshcount_t;
+
+#define MESH_ASSET_DIR "assets/meshes"
 
 struct AssetManager {	
 	IArena* arena;
-};
-
-struct MeshHeader {
-	int numVerts;
-	int numIndeces;
-	uintptr_t offset;
-	char name[MAX_ASSET_NAME];
+	MeshHeader mHeader[MAX_CONCURRENT_MESHES];
+	Mesh* meshes;
+	meshcount_t numMeshes;
 };
 
 struct MeshFileHeader {
-	int numMeshes;
+	meshcount_t numMeshes;
 };
+
+AssetManager* newAssetManager(IArena*);
+Mesh* getMeshAsset(std::string);
+Mesh* loadMeshFromAssetDirectory(std::string, AssetManager*);
 
 #endif

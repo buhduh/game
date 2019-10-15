@@ -40,7 +40,7 @@ bool processFaceLine(std::string line, FaceTracker* fTracker) {
 	//should always be multiples of 3, what happens if we end up doing different
 	//topologies?
 	for(int i = 1; i <= 3; i++) {
-		fTracker->fBuffer[fTracker->fIndex++] = static_cast<VertexIndex>((
+		fTracker->fBuffer[fTracker->fIndex++] = static_cast<vertexindex_t>((
 			atoi(match.str(i).c_str()) - 1)
 		);
 	}
@@ -68,7 +68,7 @@ bool processVertexLine(std::string line, VertexTracker* vTracker) {
 	if(!std::regex_match(line.c_str(), match, VERT_PATT)) {
 		return false;
 	}
-	vTracker->vBuffer[vTracker->vIndex++] = glm::vec3(
+	vTracker->vBuffer[vTracker->vIndex++] = vertex_t(
 		atof(match.str(1).c_str()),
 		atof(match.str(2).c_str()),
 		atof(match.str(3).c_str())
@@ -90,17 +90,26 @@ bool writeObject(ParsedArgs* pArgs, Object* object) {
 		numIndeces: object->fTracker->fIndex,
 		offset: 0,
 	};
+	//TODO this will need to be expanded to multiple meshes
+	//at some point
+	//file header
 	strcpy(mHeader.name, object->name.c_str());
 	fwrite(&mFileHeader, sizeof(MeshFileHeader), 1, oFile);
+	//mesh header list
 	fwrite(&mHeader, sizeof(MeshHeader), 1, oFile);
+	//NOTE very important to match mesh struct, duh
+	//vertx
+	fwrite(&mHeader.numVerts, sizeof(vertexindex_t), 1, oFile);
 	fwrite(
 		object->vTracker->vBuffer, 
-		sizeof(glm::vec3), 
+		sizeof(vertex_t), 
 		object->vTracker->vIndex, oFile
 	);
+	//indeces
+	fwrite(&mHeader.numIndeces, sizeof(vertexindex_t), 1, oFile);
 	fwrite(
 		object->fTracker->fBuffer, 
-		sizeof(VertexIndex), 
+		sizeof(vertexindex_t), 
 		object->fTracker->fIndex, oFile
 	);
 	fclose(oFile);

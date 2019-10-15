@@ -7,9 +7,8 @@
 #include <fstream>
 #include <regex>
 
-#include "artemis_entity.hpp"
+#include "artemis_mesh.hpp"
 
-#define STD_LOG(MSG) std::cout << MSG << std::endl
 #define STD_ERR(MSG) std::cerr << MSG << std::endl
 #define QUIT(MSG) \
 	STD_ERR(MSG); \
@@ -34,13 +33,13 @@ struct ParsedArgs {
 };
 
 struct VertexTracker {
-	VertexIndex vIndex;	
-	glm::vec3* vBuffer;
+	vertexindex_t vIndex;	
+	vertex_t* vBuffer;
 };
 
 struct FaceTracker {
-	VertexIndex fIndex;
-	VertexIndex* fBuffer;
+	vertexindex_t fIndex;
+	vertexindex_t* fBuffer;
 };
 
 struct Object {

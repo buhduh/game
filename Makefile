@@ -1,7 +1,7 @@
 #TODO Really need to sort these flags out
 
 CFLAGS = -std=c++17 -I$(VULKAN_SDK)/include -Iinclude -I$(HOME)/include -DDEBUG
-LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan
+LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 
@@ -82,7 +82,7 @@ $(WAVEFRONT_TOOL): $(WAVEFRONT_BLD)
 $(WAVEFRONT_BLD):
 
 clean:
-	rm -rf $(BUILD_DIRS)
+	rm -rf $(filter-out ./, $(BUILD_DIRS))
 	@$(MAKE) -C tools clean
 
 .PHONY: all wavefront shaders spike

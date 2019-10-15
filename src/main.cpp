@@ -3,9 +3,9 @@
 #include "artemis_memory.hpp"
 
 int main(void) {
-	Window *window = createWindow();
-	while(!shouldCloseWindow(window)) {
-		pollEvents();
+	platform::Window *window = platform::createWindow();
+	while(!platform::shouldCloseWindow(window)) {
+		platform::pollEvents();
 	}
-	destroyWindow(window);
+	platform::destroyWindow(window);
 }

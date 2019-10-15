@@ -4,11 +4,11 @@
 #include "platform.hpp"
 
 void* StupidArena::allocate(size_t size) {	
-	return allocatePlatformMemory(size);
+	return platform::allocatePlatformMemory(size);
 }
 
 void StupidArena::deallocate(void* ptr) {
-	deallocatePlatformMemory(ptr);
+	platform::deallocatePlatformMemory(ptr);
 }
 
 //I don't think size matters right now since I'm just allocating with
