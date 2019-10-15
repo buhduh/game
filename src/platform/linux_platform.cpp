@@ -27,6 +27,10 @@ void pollEvents() {
 	glfwPollEvents();
 }
 
-void *allocatePlatformMemory(size_t numBytes) {
+void* allocatePlatformMemory(size_t numBytes) {
 	return malloc(numBytes);
+}
+
+void deallocatePlatformMemory(void *mem) {
+	free(mem);
 }

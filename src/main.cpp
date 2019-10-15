@@ -1,9 +1,8 @@
 #include "platform.hpp"
-#include "game.hpp"
-#include "memory.hpp"
+#include "artemis_game.hpp"
+#include "artemis_memory.hpp"
 
 int main(void) {
-	GameMemory persistentStorage = newGameMemory(kilobyte(1));
 	Window *window = createWindow();
 	while(!shouldCloseWindow(window)) {
 		pollEvents();

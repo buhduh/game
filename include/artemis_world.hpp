@@ -1,7 +1,7 @@
-#ifndef WORLD_HPP
-#define WORLD_HPP
+#ifndef ARTEMIS_WORLD_HPP
+#define ARTEMIS_WORLD_HPP
 
-#include "entity.hpp"
+#include "artemis_entity.hpp"
 
 //is this a god object?
 struct World {

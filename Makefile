@@ -22,11 +22,12 @@ TEST_SRC = $(shell find test -name "*.cpp")
 TEST_OBJ = $(patsubst test/%.cpp, build/test_%.o, $(TEST_SRC))
 TEST_BIN = bin/main_test_package
 
+ASSETS_DIR = assets
+
 WAVEFRONT_SRC = $(wildcard models/wavefront/*.obj)
-WAVEFRONT_BIN = $(patsubst models/wavefront/%.obj, assets/models/%.bin, $(WAVEFRONT_SRC))
+WAVEFRONT_ASSETS = $(patsubst models/wavefront/%.obj, assets/meshes/%.bin, $(WAVEFRONT_SRC))
 WAVEFRONT_TOOL = tools/bin/wavefrontparser
 WAVEFRONT_BLD = build/wavefrontparser
-WAVEFRONT_PARSER = tools/bin/wavefrontparser
 
 SHADER_TYPES = frag vert
 SHADER_SRC = $(foreach type, $(SHADER_TYPES), $(wildcard shaders/*.$(type)))
@@ -35,11 +36,11 @@ SHADER_SPV = $(patsubst shaders/%, assets/shaders/%.spv, $(SHADER_SRC))
 SPIKE_SRC = $(wildcard spike/*.cpp)
 SPIKE_BIN = $(patsubst spike/%.cpp, bin/spike_%, $(SPIKE_SRC))
 
-BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV)) bin)
+BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV) $(WAVEFRONT_ASSETS) $(ASSETS_DIR)) bin)
 
 EXE = bin/game
 
-all: $(BUILD_DIRS) $(EXE) $(WAVEFRONT_BIN) shaders
+all: $(BUILD_DIRS) $(EXE) $(WAVEFRONT_ASSETS) shaders
 
 test: $(BUILD_DIRS) $(TEST_BIN)
 	$(TEST_BIN)
@@ -69,11 +70,11 @@ bin/spike_%: spike/%.cpp
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-wavefront: $(WAVEFRONT_BIN)
-
-$(WAVEFRONT_BIN): assets/models/%.bin: models/wavefront/%.obj $(WAVEFRONT_TOOL)
-	$(WAVEFRONT_PARSER) $(filter-out $(WAVEFRONT_TOOL), $^) $@
+$(WAVEFRONT_ASSETS): assets/meshes/%.bin: models/wavefront/%.obj $(WAVEFRONT_TOOL)
+	$(WAVEFRONT_TOOL) $(filter-out $(WAVEFRONT_TOOL), $^) $@
 	@touch $(WAVEFRONT_BLD)
+
+wavefront: $(WAVEFRONT_ASSETS)
 
 $(WAVEFRONT_TOOL): $(WAVEFRONT_BLD)
 	$(MAKE) -C tools wavefrontparser

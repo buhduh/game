@@ -10,6 +10,7 @@ Window* createWindow();
 bool shouldCloseWindow(Window*);
 void destroyWindow(Window*);
 void pollEvents();
-void *allocatePlatformMemory(size_t);
+void* allocatePlatformMemory(size_t);
+void deallocatePlatformMemory(void*);
 
 #endif
