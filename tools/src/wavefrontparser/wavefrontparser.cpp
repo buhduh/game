@@ -1,7 +1,7 @@
 #include "artemis_asset.hpp"
 #include "wavefrontparser.hpp"
 
-#include <stdio.h>
+#include <cstdio>
 
 ParsedArgs parseArgs(int argc, char* argv[]) {
 	return ParsedArgs{
@@ -48,7 +48,7 @@ bool processFaceLine(std::string line, FaceTracker* fTracker) {
 }
 
 bool processObjectLine(std::string line, Object* object) {
-	if(line.substr(2).size() - 2 > MAX_ASSET_NAME) {
+	if(line.substr(2).size() - 2 > MAX_MESH_NAME) {
 		return false;
 	}
 	object->name = line.substr(2);
@@ -95,18 +95,15 @@ bool writeObject(ParsedArgs* pArgs, Object* object) {
 	//file header
 	strcpy(mHeader.name, object->name.c_str());
 	fwrite(&mFileHeader, sizeof(MeshFileHeader), 1, oFile);
-	//mesh header list
 	fwrite(&mHeader, sizeof(MeshHeader), 1, oFile);
 	//NOTE very important to match mesh struct, duh
-	//vertx
 	fwrite(&mHeader.numVerts, sizeof(vertexindex_t), 1, oFile);
+	fwrite(&mHeader.numIndeces, sizeof(vertexindex_t), 1, oFile);
 	fwrite(
 		object->vTracker->vBuffer, 
 		sizeof(vertex_t), 
 		object->vTracker->vIndex, oFile
 	);
-	//indeces
-	fwrite(&mHeader.numIndeces, sizeof(vertexindex_t), 1, oFile);
 	fwrite(
 		object->fTracker->fBuffer, 
 		sizeof(vertexindex_t), 

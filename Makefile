@@ -85,4 +85,7 @@ clean:
 	rm -rf $(filter-out ./, $(BUILD_DIRS))
 	@$(MAKE) -C tools clean
 
+clean_spike:
+	@rm -f bin/spike_*
+
 .PHONY: all wavefront shaders spike

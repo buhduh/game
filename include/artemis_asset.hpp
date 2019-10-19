@@ -1,10 +1,8 @@
 #ifndef ARTEMIS_ASSET_HPP
 #define ARTEMIS_ASSET_HPP
 
-#include <string>
-#include <map>
+#include <unordered_map>
 
-#include "artemis_memory.hpp"
 #include "artemis_mesh.hpp"
 
 //When this fills up will begin ejecting older meshes that
@@ -15,19 +13,24 @@ typedef uint16_t meshcount_t;
 
 #define MESH_ASSET_DIR "assets/meshes"
 
-struct AssetManager {	
-	IArena* arena;
-	MeshHeader mHeader[MAX_CONCURRENT_MESHES];
-	Mesh* meshes;
-	meshcount_t numMeshes;
-};
+//This may become a problem...
+static std::unordered_map<const char*, Mesh> MeshAssets = 
+  std::unordered_map<const char*, Mesh>(MAX_CONCURRENT_MESHES);
 
 struct MeshFileHeader {
 	meshcount_t numMeshes;
 };
 
-AssetManager* newAssetManager(IArena*);
-Mesh* getMeshAsset(std::string);
-Mesh* loadMeshFromAssetDirectory(std::string, AssetManager*);
+struct MeshHeader {
+	vertexindex_t numVerts;
+	vertexindex_t numIndeces;
+	//where the mesh is in the asset file relative to the end
+	//of the MeshHeader list.
+	uintptr_t offset;
+	char name[MAX_MESH_NAME];
+};
+
+Mesh getMeshAsset(const std::string, MeshOrganizer*);
+Mesh loadMeshFromAssetDir(const std::string, MeshOrganizer*);
 
 #endif

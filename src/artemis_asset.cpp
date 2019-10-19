@@ -1,81 +1,53 @@
 #include <vector>
 #include <string.h>
 
-#include "artemis_asset.hpp"
-#include "artemis_game.hpp"
 #include "platform.hpp"
+#include "artemis_asset.hpp"
 
-//TODO will need to bulk load assets at somepoint probably
-
-AssetManager* newAssetManager(IArena* arena) {
-	AssetManager* toRet = (AssetManager*) arena->allocate(sizeof(AssetManager));
-	assert(toRet);
-	Mesh* tMesh = (Mesh*) arena->allocate(MESH_MEMORY);
-	assert(tMesh);
-	toRet->meshes = tMesh;
-	toRet->arena = arena;
-	toRet->numMeshes = 0;
-	return toRet;
-}
-
-Mesh* getMesh(std::string name, AssetManager* aManager) {
-	for(meshcount_t i = 0; i < aManager->numMeshes; i++) {
-		if(name == std::string(aManager->mHeader[i].name)) {
-			return reinterpret_cast<Mesh*>(aManager->mHeader[i].meshPtr);
-		}
+Mesh getMeshAsset(const std::string name, MeshOrganizer* mOrganizer) {
+	if(MeshAssets.count(name.c_str())) {
+		return MeshAssets[name.c_str()];
 	}
-	Mesh* toRet = loadMeshFromAssetDirectory(name, aManager);
-	assert(toRet);
-	return toRet;
+	Mesh mesh = loadMeshFromAssetDir(name, mOrganizer);
+	assert(!mesh.isNil());
+	return mesh;
 }
 
-//use the c FILE interface, the c++ one is stupid and complicated, don't care
-//is this safe to use outside of the platform layer?
-//loads the mesh into the asset manager
-//TODO this requires testing
-Mesh* loadMeshFromAssetDirectory(std::string name, AssetManager* aManager) {
-	//sooner or later this will blow up
-	assert(aManager->numMeshes < MAX_CONCURRENT_MESHES);
-	std::vector<std::string> assetFiles = platform::getFilesInDir(MESH_ASSET_DIR);
+Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
+	std::vector<std::string> files = platform::getFilesInDir(std::string(MESH_ASSET_DIR));
 	MeshFileHeader mFileHeader;
-	size_t mFSize = sizeof(MeshFileHeader);
-	size_t mHSize = sizeof(MeshHeader);
-	Mesh toRet;
-	for(auto& f: assetFiles) {
+	size_t readCount;
+	for(auto& f: files) {
 		FILE* aFile = fopen(f.c_str(), "rb");
 		assert(aFile);
-		assert(fread(&mFileHeader, mFSize, 1, aFile) == mFSize);
-		if(!mFileHeader.numMeshes) continue;
-		//MeshHeader mHeaders[mFileHeader.numMeshes] = MeshHeader{0};
+		readCount = fread(&mFileHeader, sizeof(MeshFileHeader), 1, aFile);
+		assert(readCount == 1);
+		//this might be a problem if the MeshHeader list is too long
 		MeshHeader mHeaders[mFileHeader.numMeshes];
-		assert(
-			fread(mHeaders, mHSize, mFileHeader.numMeshes, aFile) ==
-			mHSize * mFileHeader.numMeshes
-		);
+		readCount =
+			fread(mHeaders, sizeof(MeshHeader), mFileHeader.numMeshes, aFile);
+		assert(readCount == mFileHeader.numMeshes);
 		for(meshcount_t i = 0; i < mFileHeader.numMeshes; i++) {
-			MeshHeader mHeader = mHeaders[i];	
-			if(strcmp(mHeader.name, name.c_str())) {
-				meshcount_t headerIndex = aManager->numMeshes;
-				memcpy(
-					&aManager->mHeader[headerIndex], 
-					&mHeader, mHSize
-				);
-				uintptr_t mPtr = aManager->mHeader[headerIndex - 1].meshPtr;
-				mPtr += static_cast<uintptr_t>(getSizeOfMesh((Mesh*) mPtr));
-				aManager->mHeader[headerIndex].meshPtr = mPtr;
-				Mesh* mesh = reinterpret_cast<Mesh*>(mPtr);
-				fseek(aFile, mHeader.offset, SEEK_CUR);
-				size_t tot = 0;
-				tot += fread(&mesh->numVerts, sizeof(vertexindex_t), 1, aFile);
-				tot += fread(mesh->vertices, sizeof(vertex_t), mesh->numVerts, aFile);
-				tot += fread(&mesh->numIndeces, sizeof(vertexindex_t), 1, aFile);
-				tot += fread(mesh->indeces, sizeof(vertexindex_t), mesh->numIndeces, aFile);
-				fclose(aFile);
-				assert(tot == getSizeOfMesh(mesh));
-				aManager->numMeshes += 1;
-				return mesh;
-			}
+			if(strcmp(name.c_str(), mHeaders[i].name) != 0) continue;
+			assert(fseek(aFile, mHeaders[i].offset, SEEK_END) == 0);
+			readCount = fread(
+				mOrganizer->vertexBufferEnd, sizeof(vertex_t), 
+				mHeaders[i].numVerts, aFile
+			);
+			assert(readCount == mHeaders[i].numVerts);
+			readCount = fread(
+				mOrganizer->indexBufferEnd, sizeof(vertexindex_t),
+				mHeaders[i].numIndeces, aFile
+			);
+			assert(readCount == mHeaders[i].numIndeces);
+			Mesh toRet = Mesh(
+				mHeaders[i].numVerts, mHeaders[i].numIndeces,
+				mOrganizer->vertexBufferEnd, mOrganizer->indexBufferEnd
+			);
+			mOrganizer->vertexBufferEnd += mHeaders[i].numVerts;
+			mOrganizer->indexBufferEnd += mHeaders[i].numIndeces;
+			return toRet;
 		}
 	}
-	return nullptr;
+	return Mesh();
 }

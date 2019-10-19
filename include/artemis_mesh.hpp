@@ -4,38 +4,45 @@
 #include <glm/glm.hpp>
 
 #include "artemis_game.hpp"
+#include "artemis_memory.hpp"
 
-//how much memory to allocate to the mesh storage
+//how much memory to allocate to mesh data
 //may end up ejecting these too
-#define MESH_MEMORY megabytes(32)
+#define VERTEX_BUFFER_SIZE megabytes(32)
+#define INDEX_BUFFER_SIZE megabytes(32)
+
+#define MAX_MESH_NAME UINT8_MAX
 
 //these must match, change them concurrently
 #define MAX_VERTS UINT16_MAX
 typedef uint16_t vertexindex_t ;
-
 typedef glm::vec3 vertex_t;
+typedef vertex_t* vertexbuffer_t;
+typedef vertexindex_t* indexbuffer_t;
 
-//numVerts and numIndeces is a bit redundant, as this is saved
-//in the header as well, 
-//simplifies looking up the vertex and index lists though
-struct Mesh {
-	vertexindex_t numVerts;
-	vertex_t* vertices;
-	vertexindex_t numIndeces;
-	vertexindex_t* indeces;  
-};
-
-struct MeshHeader {
+//for now the buffers are pointers into the MeshOrganizer
+class Mesh {
+	public:
+	Mesh(vertexindex_t, vertexindex_t, vertex_t*, vertexindex_t*);
+	Mesh();
+	size_t getSizeOf();
 	vertexindex_t numVerts;
 	vertexindex_t numIndeces;
-	//is an offset when in a file relative to the end of the MeshHeader* structure
-	//or a pointer directly into the Mesh* structure when in memory
-	union {
-		uintptr_t offset, meshPtr;
-	};
-	char name[MAX_ASSET_NAME];
+	vertexbuffer_t vertices;
+	indexbuffer_t indeces;  
+	bool isNil();
 };
 
-size_t getSizeOfMesh(Mesh*);
+//Memory organization stuff goes here
+class MeshOrganizer {
+	public:
+	MeshOrganizer(IArena*);
+	vertex_t* vertexBufferEnd;
+	vertexindex_t* indexBufferEnd;
+	vertexbuffer_t vertexBuffer;
+	indexbuffer_t indexBuffer;
+	private:
+	IArena* arena;
+};
 
 #endif
