@@ -5,14 +5,15 @@
 #include "artemis_asset.hpp"
 
 Mesh getMeshAsset(const std::string name, MeshOrganizer* mOrganizer) {
-	if(MeshAssets.count(name.c_str())) {
-		return MeshAssets[name.c_str()];
+	if(MeshAssets.count(name)) {
+		return MeshAssets[name];
 	}
 	Mesh mesh = loadMeshFromAssetDir(name, mOrganizer);
 	assert(!mesh.isNil());
 	return mesh;
 }
 
+//TODO verify meshes don't blow past allocated memory
 Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
 	std::vector<std::string> files = platform::getFilesInDir(std::string(MESH_ASSET_DIR));
 	MeshFileHeader mFileHeader;
@@ -29,10 +30,10 @@ Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
 		assert(readCount == mFileHeader.numMeshes);
 		for(meshcount_t i = 0; i < mFileHeader.numMeshes; i++) {
 			if(strcmp(name.c_str(), mHeaders[i].name) != 0) continue;
-			assert(fseek(aFile, mHeaders[i].offset, SEEK_END) == 0);
+			assert(fseek(aFile, mHeaders[i].offset, SEEK_CUR) == 0);
 			readCount = fread(
 				mOrganizer->vertexBufferEnd, sizeof(vertex_t), 
-				mHeaders[i].numVerts, aFile
+				(size_t) mHeaders[i].numVerts, aFile
 			);
 			assert(readCount == mHeaders[i].numVerts);
 			readCount = fread(
@@ -46,8 +47,17 @@ Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
 			);
 			mOrganizer->vertexBufferEnd += mHeaders[i].numVerts;
 			mOrganizer->indexBufferEnd += mHeaders[i].numIndeces;
+			MeshAssets[name] = toRet;
 			return toRet;
 		}
 	}
 	return Mesh();
+}
+
+std::ostream& operator<<(std::ostream& out, const meshassets_t& mAssets) {
+	for(auto i = mAssets.begin(); i != mAssets.end(); ++i) {
+		out << "asset name: " << i->first << std::endl;	
+		out << i->second;
+	}
+	return out;
 }

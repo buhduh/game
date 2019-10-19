@@ -34,12 +34,12 @@ struct ParsedArgs {
 
 struct VertexTracker {
 	vertexindex_t vIndex;	
-	vertex_t* vBuffer;
+	vertexbuffer_t vBuffer;
 };
 
 struct FaceTracker {
 	vertexindex_t fIndex;
-	vertexindex_t* fBuffer;
+	indexbuffer_t fBuffer;
 };
 
 struct Object {

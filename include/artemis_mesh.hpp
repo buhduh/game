@@ -1,6 +1,7 @@
 #ifndef ARTEMIS_MESH_HPP
 #define ARTEMIS_MESH_HPP
 
+#include <iostream>
 #include <glm/glm.hpp>
 
 #include "artemis_game.hpp"
@@ -31,7 +32,9 @@ class Mesh {
 	vertexbuffer_t vertices;
 	indexbuffer_t indeces;  
 	bool isNil();
+	friend std::ostream& operator<<(std::ostream&, const Mesh&);
 };
+
 
 //Memory organization stuff goes here
 class MeshOrganizer {

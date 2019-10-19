@@ -14,8 +14,8 @@ typedef uint16_t meshcount_t;
 #define MESH_ASSET_DIR "assets/meshes"
 
 //This may become a problem...
-static std::unordered_map<const char*, Mesh> MeshAssets = 
-  std::unordered_map<const char*, Mesh>(MAX_CONCURRENT_MESHES);
+typedef std::unordered_map<std::string, Mesh> meshassets_t;
+static meshassets_t MeshAssets = meshassets_t(MAX_CONCURRENT_MESHES);
 
 struct MeshFileHeader {
 	meshcount_t numMeshes;

@@ -94,21 +94,23 @@ bool writeObject(ParsedArgs* pArgs, Object* object) {
 	//at some point
 	//file header
 	strcpy(mHeader.name, object->name.c_str());
-	fwrite(&mFileHeader, sizeof(MeshFileHeader), 1, oFile);
-	fwrite(&mHeader, sizeof(MeshHeader), 1, oFile);
-	//NOTE very important to match mesh struct, duh
-	fwrite(&mHeader.numVerts, sizeof(vertexindex_t), 1, oFile);
-	fwrite(&mHeader.numIndeces, sizeof(vertexindex_t), 1, oFile);
-	fwrite(
+	size_t numWrite;
+	numWrite = fwrite(&mFileHeader, sizeof(MeshFileHeader), 1, oFile);
+	assert(numWrite == 1);
+	numWrite = fwrite(&mHeader, sizeof(MeshHeader), 1, oFile);
+	assert(numWrite == 1);
+	numWrite = fwrite(
 		object->vTracker->vBuffer, 
 		sizeof(vertex_t), 
 		object->vTracker->vIndex, oFile
 	);
-	fwrite(
+	assert(numWrite == object->vTracker->vIndex);
+	numWrite = fwrite(
 		object->fTracker->fBuffer, 
 		sizeof(vertexindex_t), 
 		object->fTracker->fIndex, oFile
 	);
+	assert(numWrite == object->fTracker->fIndex);
 	fclose(oFile);
 	return true;
 }
