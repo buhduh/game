@@ -37,6 +37,8 @@ class Mesh {
 
 //Memory organization stuff goes here
 //TODO don't blow past buffer sizes when adding meshes
+//the renderer will blow up if vertex list
+//isn't contiguous in memory!!!
 class MeshOrganizer {
 	public:
 	MeshOrganizer(IArena*);

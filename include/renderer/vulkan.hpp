@@ -12,12 +12,13 @@
 #include <GLFW/glfw3.h>
 
 #include "platform.hpp"
+#include "artemis_mesh.hpp"
 
 namespace renderer {
 
 class Vulkan  {
 	public:
-	Vulkan(platform::Window*);
+	Vulkan(platform::Window*, meshcount_t, Mesh*);
 	~Vulkan();
 	void drawFrame();
 	void waitIdle();
@@ -60,8 +61,11 @@ class Vulkan  {
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	size_t currentFrame;
+  meshcount_t numMeshes;
+  //vert lists and index lists MUST be contigous in memory
+  //see createVertexBuffer or createIndexBuffer why
+  Mesh* meshes;
 
-	//VkDebugUtilsMessengerEXT* debugger;
 	VkDebugUtilsMessengerEXT debugger;
 
 	//functions
@@ -82,6 +86,7 @@ class Vulkan  {
 	uint32_t getQueueFamilyIndex(VkPhysicalDevice);
 	struct SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice);
 	void selectSuitableDevice(const std::vector<VkPhysicalDevice>);
+  void createGraphicsPipeline();
 	void createLogicalDeviceAndQueue();
 	void createSwapChain();
 	void createImageViews();
@@ -89,6 +94,7 @@ class Vulkan  {
 	void createDescriptorSetLayout();
 	void createFramebuffers();
 	void createVertexBuffer();
+	void createCommandBuffers();
 	std::vector<VkImageView> swapChainImageViews;
 	void createCommandPool();
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(
