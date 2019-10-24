@@ -35,8 +35,8 @@ class Mesh {
 	friend std::ostream& operator<<(std::ostream&, const Mesh&);
 };
 
-
 //Memory organization stuff goes here
+//TODO don't blow past buffer sizes when adding meshes
 class MeshOrganizer {
 	public:
 	MeshOrganizer(IArena*);
@@ -47,5 +47,7 @@ class MeshOrganizer {
 	private:
 	IArena* arena;
 };
+
+size_t getSizeOfVertexBuffer(Mesh*, meshcount_t);
 
 #endif

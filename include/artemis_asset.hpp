@@ -5,12 +5,6 @@
 
 #include "artemis_mesh.hpp"
 
-//When this fills up will begin ejecting older meshes that
-//aren't in use
-//these must match, change them concurrently
-#define MAX_CONCURRENT_MESHES UINT16_MAX
-typedef uint16_t meshcount_t;
-
 #define MESH_ASSET_DIR "assets/meshes"
 
 //This may become a problem...

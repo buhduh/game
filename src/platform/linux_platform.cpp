@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 
 #include "platform.hpp"
 #include "artemis_game.hpp"
@@ -47,4 +48,17 @@ namespace platform {
 		return toRet;
 	}
 
+	size_t getFileSize(const std::string& fName) {
+		std::filesystem::path p(fName); 
+		return std::filesystem::file_size(p);
+	}
+
+	size_t loadFileIntoBuffer(char* buffer, size_t size, const std::string& fName) {
+		std::ifstream file(fName, std::ios::binary);
+		assert(file.is_open());
+		file.read(buffer, size);
+		assert(file.tellg() == size);
+		file.close();
+		return size;
+	}
 }

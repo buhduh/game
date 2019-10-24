@@ -21,6 +21,8 @@ namespace platform {
 	void* allocatePlatformMemory(size_t);
 	void deallocatePlatformMemory(void*);
 	std::vector<std::string> getFilesInDir(std::string);
+	size_t getFileSize(const std::string&);
+	size_t loadFileIntoBuffer(char*, size_t, const std::string&);
 }
 
 #endif

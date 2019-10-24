@@ -32,6 +32,14 @@ bool Mesh::isNil() {
 	return numVerts == 0;
 }
 
+size_t getSizeOfVertexBuffer(Mesh* mesh, meshcount_t numMeshes) {
+	vertexindex_t totVerts = 0;
+	for(meshcount_t i = 0; i < numMeshes; i++) {
+		totVerts += mesh[i].numVerts;	
+	}
+	return sizeof(vertex_t) * totVerts;
+}
+
 std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
 	out << "vertex count: " << mesh.numVerts << std::endl;
 	out << "index count: " << mesh.numIndeces << std::endl;
