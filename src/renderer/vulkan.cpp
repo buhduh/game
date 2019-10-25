@@ -74,15 +74,11 @@ Vulkan::Vulkan(platform::Window* window, meshcount_t numMeshes, Mesh* meshes)
 	createDescriptorPool();
 	createDescriptorSets();
 	createCommandBuffers();
-	/*
-	//TODO all the below
 	createSyncObjects();
-	*/
 }
 
 //TODO
 Vulkan::~Vulkan() {
-	/*
 	cleanupSwapChain();
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 	vkDestroyBuffer(device, indexBuffer, nullptr);
@@ -98,14 +94,12 @@ Vulkan::~Vulkan() {
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
-	*/
 }
 
 void Vulkan::waitIdle() {
 	vkDeviceWaitIdle(device);
 }
 
-//TODO
 void Vulkan::cleanupSwapChain() {
 	for(auto framebuffer : swapChainFramebuffers) {
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -128,7 +122,6 @@ void Vulkan::cleanupSwapChain() {
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 }
 
-//TODO
 void Vulkan::recreateSwapChain() {
 	vkDeviceWaitIdle(device);
 	cleanupSwapChain();
@@ -136,6 +129,37 @@ void Vulkan::recreateSwapChain() {
 	createImageViews();
 	createRenderPass();
 	createFramebuffers();
+}
+
+void Vulkan::createSyncObjects() {
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+		auto res = vkCreateSemaphore(
+			device, &semaphoreInfo, nullptr, 
+			&imageAvailableSemaphores[i]
+		);
+		assert(res == VK_SUCCESS);
+		res = vkCreateSemaphore(
+			device, &semaphoreInfo, nullptr, 
+			&renderFinishedSemaphores[i]
+		);
+		assert(res == VK_SUCCESS);
+		res = vkCreateFence(
+			device, &fenceInfo, nullptr, 
+			&inFlightFences[i]
+		);
+		assert(res == VK_SUCCESS);
+	}
 }
 
 void Vulkan::createCommandBuffers() {
@@ -515,7 +539,7 @@ void Vulkan::drawFrame() {
 	}
 	assert(res == VK_SUCCESS);
 
-	//updateUniformBuffer(imageIndex);
+	updateUniformBuffer(imageIndex);
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -533,11 +557,11 @@ void Vulkan::drawFrame() {
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
-	assert(
-		vkQueueSubmit(
-			graphicsQueue, 1, &submitInfo, 
-			inFlightFences[currentFrame]) != VK_SUCCESS
+	res = vkQueueSubmit(
+		graphicsQueue, 1, &submitInfo, 
+		inFlightFences[currentFrame]
 	);
+	assert(res == VK_SUCCESS);
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.waitSemaphoreCount = 1;
@@ -558,6 +582,29 @@ void Vulkan::drawFrame() {
 	vkQueueWaitIdle(presentQueue);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void Vulkan::updateUniformBuffer(uint32_t currentImage) {
+	UniformBufferObject ubo = {};
+	ubo.model = glm::mat4(1.0f);
+	ubo.view = glm::lookAt(
+		glm::vec3(2.0f, 2.0f, 2.0f), 
+		glm::vec3(0.0f, 0.0f, 0.0f), 
+		glm::vec3(0.0f, 0.0f, 1.0f)
+	);
+	ubo.proj = glm::perspective(
+		glm::radians(45.0f), 
+		swapChainExtent.width / (float) swapChainExtent.height, 
+		0.1f, 10.0f
+	);
+	ubo.proj[1][1] *= -1;
+	void* data;
+	vkMapMemory(
+		device, uniformBuffersMemory[currentImage], 0, 
+		sizeof(ubo), 0, &data
+	);
+	memcpy(data, &ubo, sizeof(ubo));
+	vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
 void Vulkan::createBuffer(

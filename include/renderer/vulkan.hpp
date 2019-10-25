@@ -47,7 +47,6 @@ class Vulkan  {
 	VkPipelineLayout pipelineLayout;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	VkCommandPool commandPool;
-	//TODO this is going to take a lot of work
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
@@ -61,10 +60,10 @@ class Vulkan  {
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	size_t currentFrame;
-  meshcount_t numMeshes;
-  //vert lists and index lists MUST be contigous in memory
-  //see createVertexBuffer or createIndexBuffer why
-  Mesh* meshes;
+	meshcount_t numMeshes;
+	//vert lists and index lists MUST be contigous in memory
+	//see createVertexBuffer or createIndexBuffer why
+	Mesh* meshes;
 
 	VkDebugUtilsMessengerEXT debugger;
 
@@ -82,11 +81,12 @@ class Vulkan  {
 	void createSurface();
 	void createDebugger();
 	void createPhysicalDevice();
+	void createSyncObjects();
 	bool checkDeviceExtensionSupport(VkPhysicalDevice);
 	uint32_t getQueueFamilyIndex(VkPhysicalDevice);
 	struct SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice);
 	void selectSuitableDevice(const std::vector<VkPhysicalDevice>);
-  void createGraphicsPipeline();
+	void createGraphicsPipeline();
 	void createLogicalDeviceAndQueue();
 	void createSwapChain();
 	void createImageViews();
@@ -94,6 +94,7 @@ class Vulkan  {
 	void createDescriptorSetLayout();
 	void createFramebuffers();
 	void createVertexBuffer();
+	void updateUniformBuffer(uint32_t);
 	void createCommandBuffers();
 	std::vector<VkImageView> swapChainImageViews;
 	void createCommandPool();

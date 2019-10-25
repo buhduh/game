@@ -9,9 +9,10 @@ int main(void) {
 	IArena* arena = new StupidArena();
 	MeshOrganizer mOrganizer(arena);
 	Mesh mesh1 = getMeshAsset("Cube", &mOrganizer);
-	renderer::Vulkan Vulkan = renderer::Vulkan(window, 1, &mesh1);
+	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, &mesh1);
 	while(!platform::shouldCloseWindow(window)) {
 		platform::pollEvents();
+		vulkan.drawFrame();	
 	}
 	platform::destroyWindow(window);
 }

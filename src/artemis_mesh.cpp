@@ -59,7 +59,7 @@ std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
 		out << "index list: nil" << std::endl;
 	} else {
 		out << "index list:" << std::endl;
-		for(vertexindex_t i = 0; i < mesh.numVerts;) {
+		for(vertexindex_t i = 0; i < mesh.numIndeces;) {
 			out << "\t" << mesh.indeces[i++] << ", " << mesh.indeces[i++]
 			<< ", " << mesh.indeces[i++] << std::endl;
 		}
