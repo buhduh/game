@@ -17,6 +17,38 @@ namespace platform {
 		glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 		return glfwCreateWindow(1024, 768, "game", 0, 0);
+		/*
+		Window* window = glfwCreateWindow(
+			mode->width, mode->height, 
+			"game", monitor, 0
+		);
+		glfwSetWindowMonitor(
+			window, nullptr, 0, 0, 
+			mode->width, mode->height, 
+			mode->refreshRate
+		);
+		return window;
+		*/
+	}
+
+	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		STD_LOG("key: " << key);
+		STD_LOG("scancode: " << scancode);
+		STD_LOG("action: " << action);
+		STD_LOG("mods: " << mods);
+		if(action == GLFW_PRESS) {
+			STD_LOG("pressed");
+		}
+		if(action == GLFW_REPEAT) {
+			STD_LOG("repeat");
+		}
+		if(action == GLFW_RELEASE) {
+			STD_LOG("release");
+		}
+	}
+
+	void initializeInput(Window* window) {
+		glfwSetKeyCallback(window, keyCallback);
 	}
 
 	bool shouldCloseWindow(Window *window) {

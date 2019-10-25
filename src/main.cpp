@@ -6,13 +6,14 @@
 
 int main(void) {
 	platform::Window* window = platform::createWindow();
+	platform::initializeInput(window);
 	IArena* arena = new StupidArena();
 	MeshOrganizer mOrganizer(arena);
 	Mesh mesh1 = getMeshAsset("Cube", &mOrganizer);
 	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, &mesh1);
 	while(!platform::shouldCloseWindow(window)) {
-		platform::pollEvents();
 		vulkan.drawFrame();	
+		platform::pollEvents();
 	}
 	platform::destroyWindow(window);
 }
