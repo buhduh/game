@@ -3,6 +3,7 @@
 
 #include "platform.hpp"
 #include "artemis_game.hpp"
+#include "artemis_input.hpp"
 
 namespace platform {
 
@@ -31,20 +32,11 @@ namespace platform {
 		*/
 	}
 
-	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-		STD_LOG("key: " << key);
-		STD_LOG("scancode: " << scancode);
-		STD_LOG("action: " << action);
-		STD_LOG("mods: " << mods);
-		if(action == GLFW_PRESS) {
-			STD_LOG("pressed");
-		}
-		if(action == GLFW_REPEAT) {
-			STD_LOG("repeat");
-		}
-		if(action == GLFW_RELEASE) {
-			STD_LOG("release");
-		}
+	void keyCallback(
+		Window* window, int key, 
+		int scancode, int action, int mods
+	) {
+		input::internalInputCallback(key, action);
 	}
 
 	void initializeInput(Window* window) {

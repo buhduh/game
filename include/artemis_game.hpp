@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <cassert>
+#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
 
 #define kilobytes(SIZE) (1024 * (SIZE))
 #define megabytes(SIZE) (1024 * kilobytes(SIZE))
