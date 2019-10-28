@@ -36,7 +36,7 @@ namespace platform {
 		Window* window, int key, 
 		int scancode, int action, int mods
 	) {
-		input::internalInputCallback(key, action);
+		input::internalInputCallback(scancode, action);
 	}
 
 	void initializeInput(Window* window) {

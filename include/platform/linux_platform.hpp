@@ -7,7 +7,8 @@
 namespace platform {
 	typedef GLFWwindow Window;
 	typedef int input_key_t;
-	typedef int input_action_t;
+	typedef int input_event_t;
+	const input_key_t KEY_UNASSIGNED = -1;
 }
 
 #endif

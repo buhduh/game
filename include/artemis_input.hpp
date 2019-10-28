@@ -9,25 +9,30 @@
 //or a state machine, but I can deal with that later
 namespace input {
 
+	//NOTE statically defining the various lists for now
+	//asserts will blow up when I break it, at which point
+	//I either dynamically adjust at run time or make them bigger
+
 	//will need to tune this i think
 	const uint8_t MAX_CALLBACKS = UINT8_MAX;
 	const uint8_t DEFAULT_CB_COUNT = 32; 
 
-	typedef uint8_t action_t;
-	typedef void ACTION_CALLBACK(struct Context*, key_t, action_t);
+	typedef uint8_t event_t;
+	typedef platform::input_key_t key_t;
+	typedef void ACTION_CALLBACK(struct Context*, key_t, event_t);
 
-	const action_t PRESSED = 0;
-	const action_t RELEASED = 1;
-	struct _action {
-		ACTION_CALLBACK* callbacks[2][MAX_CALLBACKS];
-	};
+	//may need to map these in the platform layer and write some kind of converter
+	//to the index values
+	const event_t NUM_EVENTS = 2;
+	const event_t KEY_PRESSED = 0;
+	const event_t KEY_RELEASED = 1;
 
 	//will need to tune this i think
 	const uint8_t MAX_KEYS = UINT8_MAX;
 	const uint8_t DEFAULT_KEY_COUNT = 16;
 	struct _key {
 		key_t value;
-		_action* actions[1];
+		ACTION_CALLBACK* actions[NUM_EVENTS][DEFAULT_CB_COUNT];
 	};
 
 /*
@@ -36,28 +41,27 @@ namespace input {
 	cb***
 	this is all packed tightly in memory, cbs directly after actions directly after keys
 	hopefully this will all fit on l1 cache.
+	keys are unique to context
+	all contexts share same callback list
 */
-	//Contexts are statically sized for now
 	struct Context {
 		uint8_t numKeys;
+		//technically numCallbacks should go in the _key struct
+		//but changing the callback size for individual keys
+		//sounds really messy
 		uint8_t numCallbacks;
 		_key keys[DEFAULT_KEY_COUNT];
 	};
 
 	void initializeInputSystem(IArena*, platform::Window*);
-	Context* requestContext();
-	bool addCallbackToContext(Context*, action_t, key_t, ACTION_CALLBACK*);
+	Context* requestNewContext();
+	bool addCallbackToContext(Context*, event_t, key_t, ACTION_CALLBACK*);
 	bool removeCallbackFromContext(Context*, ACTION_CALLBACK*);
 	void enableContext(Context*);
 	Context* getActiveContext();
 
 	//if activeContext is nullptr do nothing
-	void internalInputCallback(platform::input_key_t, platform::input_action_t);
-
-	static Context* activeContext = nullptr;
-	static bool initialized = false;
-	static IArena* arena = nullptr;
-
+	void internalInputCallback(platform::input_key_t, platform::input_event_t);
 };
 
 #endif

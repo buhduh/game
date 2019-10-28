@@ -1,128 +1,96 @@
 #include "artemis_input.hpp"
 
 namespace input {
-	
+	static uint8_t numCallbacks = 0;
+	static Context* activeContext = nullptr;
+	static IArena* arena = nullptr;
+
+	size_t getContextSize(Context context) {
+		return sizeof(_key) * context.numKeys;
+	}
+
 	void initializeInputSystem(IArena* _arena, platform::Window* window) {
-		assert(!initialized);
-		if(initialized) return;
-		arena = _arena;	
-		initialized = true;
+		assert(_arena);
+		if(arena) return;
+		arena = _arena;
 	}
 
-	Context makeEmptyContext() {
-	}
-
-	Context* requestContext() {
-		assert(initialized);
+	//This is stupid easier....
+	Context* requestNewContext() {
 		assert(arena);
-
-		_key keys[DEFAULT_KEY_COUNT];
-		Context context = Context{
-			numKeys: DEFAULT_KEY_COUNT,
-			numCallbacks: DEFAULT_CB_COUNT,
-			keys: keys
-		};
-
-		size_t cSize(sizeof(context));
-
-		_action action = {};
-		size_t aSize(sizeof(action) * DEFAULT_KEY_COUNT);
-
-		ACTION_CALLBACK* callbacks[DEFAULT_CB_COUNT];
-		size_t cbSize(sizeof(callbacks));
-
-		Context* toRet = (Context*) arena->allocate(cSize + aSize + cbSize);
-		assert(toRet);
-		return toRet;
-		/*
-		*toRet = context;
-
-		uintptr_t actionIPtr = reinterpret_cast<uintptr_t>(toRet) + cSize;
-		_action* actionPtr = reinterpret_cast<_action*>(actionIPtr);
-		*actionPtr = action;
-
-		uintptr_t cbIPtr = reinterpret_cast<uintptr_t>(actionPtr) + aSize;
-		ACTION_CALLBACK** cbPtr = reinterpret_cast<ACTION_CALLBACK**>(cbIPtr);
-		//cbPtr
-		return nullptr;
-		*/
+		if(!arena) return nullptr;
+		Context* context = (Context*) arena->allocate(sizeof(Context));
+		context->numCallbacks = DEFAULT_CB_COUNT;
+		context->numKeys = DEFAULT_KEY_COUNT;
+		for(int i = 0; i < context->numKeys; i++) {
+			context->keys[i].value = platform::KEY_UNASSIGNED;
+		}
+		return context;
 	}
 
-	//TODO resize context based on key size
-	size_t getSizeOfContext(Context* c) {
-		size_t nKS = sizeof(c->numKeys);
-		size_t nCb = sizeof(c->numCallbacks);
-		size_t sK = sizeof(c->keys);
-		return nKS + nCb + sK;
-	}
-
-	ACTION_CALLBACK* getCallbackLocation(Context* context) {
-		size_t sizeOfC = getSizeOfContext(context);
-		uintptr_t where = reinterpret_cast<uintptr_t>(context) + sizeOfC;
-
-	}
-
-	//not going to resize this until i have to
+	//makes no attempt to keep callbacks unique
 	bool addCallbackToContext(
-		Context* context, action_t action, 
-		key_t key, ACTION_CALLBACK* callback)
+		Context* context, event_t event, 
+		key_t key, ACTION_CALLBACK* action
+	) 
 	{
-		assert(context->numCallbacks + 1 < MAX_CALLBACKS);
+		assert(context);
+		if(!context) return false;
+		if(!action) return false;
 		_key* foundKey = nullptr;
-		for(uint8_t i = 0; i < context->numKeys; ++i) {
+		bool canAdd = false;
+		int keyIndex;
+		for(int i = 0; i < context->numKeys; i++) {
 			if(context->keys[i].value == key) {
-				context->keys[i] = foundKey;
+				foundKey = &context->keys[i];
 				break;
+			//do not believe c++ has lazy evaluation
+			} else if(!canAdd && context->keys[i].value == platform::KEY_UNASSIGNED) {
+				canAdd = true;	
+				keyIndex = i;
 			}
 		}
-		if(!foundKey) {
-			//need to add a key
+		if(foundKey) {
+			for(int i = 0; i < context->numCallbacks; i++) {
+				if(!foundKey->actions[event][i]) {
+					foundKey->actions[event][i] = action;
+					return true;
+				}
+			}
+			//most likely due to running out of space for actions
+			assert(false);
+			return false;
 		}
-		//foundKey->actions[action][context->numCallbacks] = callback;
+		//no more space left for keys...
+		assert(canAdd);
+		if(!canAdd) return false;
+		context->keys[keyIndex].value = key;
+		//should be safe to just put it at 0...., i think....
+		context->keys[keyIndex].actions[event][0] = action;
 		return true;
 	}
 
-
-	//not intended to be called from game code
-	//key is unique, not just the keyboard int, eg scan code from glfw
-	void internalInputCallback(
-		platform::input_key_t key, 
-		platform::input_action_t action
-	) {
-		/*
-		switch(key) {
-		case A:
-			STD_LOG("wtf?");
-			break;
-		};
-		switch(action) {
-		case PRESSED:
-			STD_LOG("pressed");
-			break;
-		case RELEASED:
-			STD_LOG("released");
-			break;
-		};
-		*/
-	}
-
-	//TODO
-	bool removeCallbackFromContext(
-		Context* handle, 
-		ACTION_CALLBACK* callback) 
-	{
-		return false;
-	}
-
-	//TODO
 	void enableContext(Context* context) {
-		assert(initialized);
+		assert(context);
 		activeContext = context;
 	}
 
-	//TODO
-	Context* getActiveContext() {
-		return activeContext;
+	void internalInputCallback(platform::input_key_t key, platform::input_event_t event) {
+		if(!activeContext) return;
+		//this might not work for other platforms, may need to move this to the platform layer
+		//glfw calls a "repeat" event whose value is 2.
+		if(event >= NUM_EVENTS) return;
+		for(int i = 0; i < activeContext->numKeys; i++) {
+			if(key == activeContext->keys[i].value) {
+				for(int j = 0; j < activeContext->numCallbacks; j++) {
+					if(activeContext->keys[i].actions[event][j]) {
+						activeContext->keys[i].actions[event][j](
+							activeContext, key, event
+						);
+					}
+				}
+				break;
+			}
+		}
 	}
-
 };

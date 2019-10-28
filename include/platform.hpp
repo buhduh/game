@@ -24,7 +24,6 @@ namespace platform {
 	size_t getFileSize(const std::string&);
 	size_t loadFileIntoBuffer(char*, size_t, const std::string&);
 	void initializeInput(Window*);
-	//void keyCallback(Window*, _input_key_t, int, int, int);
 }
 
 #endif
