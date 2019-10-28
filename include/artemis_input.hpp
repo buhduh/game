@@ -24,8 +24,8 @@ namespace input {
 	//may need to map these in the platform layer and write some kind of converter
 	//to the index values
 	const event_t NUM_EVENTS = 2;
-	const event_t KEY_PRESSED = 0;
-	const event_t KEY_RELEASED = 1;
+	const event_t KEY_PRESSED = 1;
+	const event_t KEY_RELEASED = 0;
 
 	//will need to tune this i think
 	const uint8_t MAX_KEYS = UINT8_MAX;
@@ -56,7 +56,7 @@ namespace input {
 	void initializeInputSystem(IArena*, platform::Window*);
 	Context* requestNewContext();
 	bool addCallbackToContext(Context*, event_t, key_t, ACTION_CALLBACK*);
-	bool removeCallbackFromContext(Context*, ACTION_CALLBACK*);
+	bool removeCallbackFromContext(Context*, event_t, key_t, ACTION_CALLBACK*);
 	void enableContext(Context*);
 	Context* getActiveContext();
 

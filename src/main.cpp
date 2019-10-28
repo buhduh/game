@@ -6,8 +6,12 @@
 
 #include "artemis_input.hpp"
 
-void cbPressed(input::Context* context, input::key_t key, input::event_t event) {
-	STD_LOG("pressed");
+void cbPressed1(input::Context* context, input::key_t key, input::event_t event) {
+	STD_LOG("pressed 1");
+}
+
+void cbPressed2(input::Context* context, input::key_t key, input::event_t event) {
+	STD_LOG("pressed 2");
 }
 
 void cbReleased(input::Context* context, input::key_t key, input::event_t event) {
@@ -25,8 +29,10 @@ int main(void) {
 	input::initializeInputSystem(arena, window);
 	input::Context* context = input::requestNewContext();
 	input::enableContext(context);
-	assert(input::addCallbackToContext(context, input::KEY_PRESSED, 38, cbPressed));
+	assert(input::addCallbackToContext(context, input::KEY_PRESSED, 38, cbPressed1));
+	assert(input::addCallbackToContext(context, input::KEY_PRESSED, 38, cbPressed2));
 	assert(input::addCallbackToContext(context, input::KEY_RELEASED, 38, cbReleased));
+	assert(input::removeCallbackFromContext(context, input::KEY_PRESSED, 38, cbPressed2));
 
 	while(!platform::shouldCloseWindow(window)) {
 		vulkan.drawFrame();	

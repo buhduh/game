@@ -28,6 +28,34 @@ namespace input {
 		return context;
 	}
 
+	//the problem here is that comparing pointers will remove ALL actions at that address
+	//in this system.  Only want to remove events at a particular
+	bool removeCallbackFromContext(
+		Context* context, event_t event, key_t key, ACTION_CALLBACK* action
+	) 
+	{
+		assert(context);
+		if(!context) return false;
+		if(!action) return false;
+		_key* foundKey = nullptr;
+		for(int i = 0; i < context->numKeys; i++) {
+			if(context->keys[i].value == key) {
+				foundKey = &context->keys[i];
+				break;
+			}
+		}
+		assert(foundKey);
+		if(!foundKey) return false;
+		bool removed = false;
+		for(int i = 0; i < context->numCallbacks; i++) {
+			if(foundKey->actions[event][i] == action) {
+				foundKey->actions[event][i] = nullptr;
+				removed = true;
+			}
+		}
+		return removed;
+	}
+
 	//makes no attempt to keep callbacks unique
 	bool addCallbackToContext(
 		Context* context, event_t event, 
