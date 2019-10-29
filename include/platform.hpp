@@ -24,6 +24,7 @@ namespace platform {
 	size_t getFileSize(const std::string&);
 	size_t loadFileIntoBuffer(char*, size_t, const std::string&);
 	void initializeInput(Window*);
+	size_t getCacheLineSize();
 }
 
 #endif

@@ -9,7 +9,7 @@
 
 #define kilobytes(SIZE) (1024 * (SIZE))
 #define megabytes(SIZE) (1024 * kilobytes(SIZE))
-#define gigabytes(SIZE) (1024 * megabytes(SIZE))
+#define gigabytes(SIZE) (size_t(1024) * megabytes(SIZE))
 
 #define STD_LOG(MSG) (std::cout << MSG << std::endl)
 
@@ -20,5 +20,12 @@
 #define MAX_CONCURRENT_MESHES UINT16_MAX
 typedef uint16_t meshcount_t;
 
+inline void* toPtr(const uintptr_t ptr) {
+	return reinterpret_cast<void*>(ptr);
+}
+
+inline uintptr_t toUPtr(const void* ptr) {
+	return reinterpret_cast<uintptr_t>(ptr);
+}
 
 #endif

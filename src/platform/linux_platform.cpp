@@ -7,6 +7,27 @@
 
 namespace platform {
 
+	static const size_t DEFAULT_CACHE_LINE_SIZE = 64;
+	static size_t setCacheLineSize = 0;
+
+	size_t getCacheLineSize() {
+		if(setCacheLineSize > 0) {
+			return setCacheLineSize;
+		}
+		std::string where(
+			"/sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size");
+		FILE* p = fopen(where.c_str(), "r");
+		if(!p) {
+			setCacheLineSize = DEFAULT_CACHE_LINE_SIZE;
+			return setCacheLineSize;
+		}
+		int i;
+		fscanf(p, "%d", &i);
+		fclose(p);
+		setCacheLineSize = i;
+		return setCacheLineSize;
+	}
+
 	Window* createWindow() {
 		glfwInit();
 		auto monitor = glfwGetPrimaryMonitor();

@@ -14,19 +14,49 @@ class IArena {
 	virtual void deallocate(void*) = 0;
 };
 
+class StackArena : virtual public IArena {
+	public:
+	StackArena(size_t, void*);
+	~StackArena() = default;
+	void* allocate(size_t) override;
+	void deallocate(void*) override;
+	void reset();
+	private:
+	StackArena(StackArena&&) = delete;
+	StackArena(const StackArena&) = delete;
+	void* sp;
+	const void* end;
+	const void* start;
+	const size_t size;
+};
+
+class GameMemory {
+	public:
+	GameMemory(size_t);
+	~GameMemory();
+	StackArena* newStackArena(size_t);
+	private:
+	GameMemory(GameMemory&&) = delete;
+	GameMemory(const GameMemory&) = delete;
+	void* marker;
+	void* memory;
+	void* end;
+
+	//this will constantly increment every
+	//arena request, not going to reclaim for now
+	//TODO
+	void* where;
+};
+
 class StupidArena : virtual public IArena {
 	public:
 	StupidArena() = default;
 	~StupidArena() = default;
-	void* allocate(size_t);
-	void deallocate(void*);
+	void* allocate(size_t) override;
+	void deallocate(void*) override;
 	private:
 	StupidArena(StupidArena&&) = delete;
 	StupidArena(const StupidArena&) = delete;
 };
-
-IArena* newArena(size_t);
-
-void destroyArena(IArena*);
 
 #endif
