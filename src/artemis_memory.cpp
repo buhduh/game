@@ -50,6 +50,8 @@ StackArena* GameMemory::newStackArena(size_t size) {
 }
 
 //start is cache line aligned before calling this
+//this is a little rough around the edges, doesn't quite work for
+//allocations EXACTLY equal to initialized size due to alignment
 StackArena::StackArena(size_t size, void* where) :
 	size(size)
 {

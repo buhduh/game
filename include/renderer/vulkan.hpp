@@ -12,7 +12,6 @@
 #include <GLFW/glfw3.h>
 
 #include "platform.hpp"
-#include "artemis_mesh.hpp"
 
 namespace renderer {
 
@@ -20,7 +19,7 @@ class Vulkan  {
 	public:
 	Vulkan(platform::Window*, meshcount_t, Mesh*);
 	~Vulkan();
-	void drawFrame();
+	void drawFrame(UniformBufferObject* ubo);
 	void waitIdle();
 	private:
 	const static std::vector<const char*> deviceExtensions;
@@ -94,7 +93,7 @@ class Vulkan  {
 	void createDescriptorSetLayout();
 	void createFramebuffers();
 	void createVertexBuffer();
-	void updateUniformBuffer(uint32_t);
+	void updateUniformBuffer(uint32_t, UniformBufferObject*);
 	void createCommandBuffers();
 	std::vector<VkImageView> swapChainImageViews;
 	void createCommandPool();
@@ -122,12 +121,6 @@ struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentModes;
-};
-
-struct UniformBufferObject {
-    alignas(16) glm::mat4 model;
-    alignas(16) glm::mat4 view;
-    alignas(16) glm::mat4 proj;
 };
 
 };
