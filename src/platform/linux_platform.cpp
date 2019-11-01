@@ -57,7 +57,6 @@ namespace platform {
 		Window* window, int key, 
 		int scancode, int action, int mods
 	) {
-		//STD_LOG("scancode: " << scancode << ", action: " << action);
 		input::internalInputCallback(scancode, action);
 	}
 

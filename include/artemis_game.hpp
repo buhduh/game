@@ -7,6 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #define kilobytes(SIZE) (1024 * (SIZE))
 #define megabytes(SIZE) (1024 * kilobytes(SIZE))
 #define gigabytes(SIZE) (size_t(1024) * megabytes(SIZE))
@@ -27,5 +32,10 @@ inline void* toPtr(const uintptr_t ptr) {
 inline uintptr_t toUPtr(const void* ptr) {
 	return reinterpret_cast<uintptr_t>(ptr);
 }
+
+//this would go in a math library if i had one.
+//probably when I need stuff not in glm.
+static const float PI = glm::pi<float>();
+static const float PI_OVER_2 = glm::pi<float>() / 2.0f;
 
 #endif
