@@ -8,15 +8,22 @@
 #include "artemis_input.hpp"
 #include "artemis_camera.hpp"
 
-static const uint8_t upBit    =  1 << 0;
-static const uint8_t leftBit  =  1 << 1;
-static const uint8_t downBit  =  1 << 2;
-static const uint8_t rightBit =  1 << 3;
-static const uint8_t ccwBit =    1 << 4;
-static const uint8_t cwBit  =    1 << 5;
-static const uint8_t inBit  =    1 << 6;
-static const uint8_t outBit  =   1 << 7;
-volatile static uint8_t keyState = 0;
+//translations
+static const uint8_t T_UP_BIT    =  1 << 0;
+static const uint8_t T_LEFT_BIT  =  1 << 1;
+static const uint8_t T_DOWN_BIT  =  1 << 2;
+static const uint8_t T_RIGHT_BIT =  1 << 3;
+static const uint8_t T_IN_BIT    =  1 << 4;
+static const uint8_t T_OUT_BIT   =  1 << 5;
+volatile static uint8_t translationState = 0;
+
+//rotations
+static const uint8_t R_CCW_BIT  = 1 << 0;
+static const uint8_t R_CW_BIT   = 1 << 1;
+static const uint8_t R_UP_BIT   = 1 << 2;
+static const uint8_t R_DOWN_BIT = 1 << 3;
+volatile static uint8_t rotationState = 0;
+
 
 //radians/sec
 static const float ANGULAR_VEL = PI_OVER_2;
@@ -32,24 +39,24 @@ renderer::UniformBufferObject* constructUBO(IArena* arena, Camera* camera) {
 }
 
 void updateCamera(Camera* camera, float time) {
-	if(keyState & leftBit && !(keyState & rightBit)) {
+	if(translationState & T_LEFT_BIT && !(translationState & T_RIGHT_BIT)) {
 		camera->panLeft(time);
-	} else if(keyState & rightBit && !(keyState & leftBit)) {
+	} else if(translationState & T_RIGHT_BIT && !(translationState & T_LEFT_BIT)) {
 		camera->panRight(time);
 	}
-	if(keyState & upBit && !(keyState & downBit)) {
+	if(translationState & T_UP_BIT && !(translationState & T_DOWN_BIT)) {
 		camera->panUp(time);
-	} else if(keyState & downBit && !(keyState & upBit)) {
+	} else if(translationState & T_DOWN_BIT && !(translationState & T_UP_BIT)) {
 		camera->panDown(time);
 	}
-	if(keyState & ccwBit && !(keyState & cwBit)) {
+	if(rotationState & R_CCW_BIT && !(rotationState & R_CW_BIT)) {
 		camera->rotateCCW(ANGULAR_VEL * time);
-	} else if(keyState & cwBit && !(keyState & ccwBit)) {
+	} else if(rotationState & R_CW_BIT && !(rotationState & R_CCW_BIT)) {
 		camera->rotateCW(ANGULAR_VEL * time);
 	}
-	if(keyState & inBit && !(keyState & outBit)) {
+	if(translationState & T_IN_BIT && !(translationState & T_OUT_BIT)) {
 		camera->panIn(time);
-	} else if(keyState & outBit && !(keyState & inBit)) {
+	} else if(translationState & T_OUT_BIT && !(translationState & T_IN_BIT)) {
 		camera->panOut(time);
 	}
 }
@@ -58,51 +65,51 @@ void cbAction(input::Context* context, input::key_t key, input::event_t event) {
 	switch(key) {
 	case INPUT_KEY_W:
 		if(event == input::KEY_PRESSED)
-			keyState |= upBit;	
+			translationState |= T_UP_BIT;	
 		else
-			keyState &= ~upBit;	
+			translationState &= ~T_UP_BIT;	
 		break;
 	case INPUT_KEY_A:
 		if(event == input::KEY_PRESSED)
-			keyState |= leftBit;	
+			translationState |= T_LEFT_BIT;	
 		else
-			keyState &= ~leftBit;	
+			translationState &= ~T_LEFT_BIT;	
 		break;
 	case INPUT_KEY_S:
 		if(event == input::KEY_PRESSED)
-			keyState |= downBit;	
+			translationState |= T_DOWN_BIT;	
 		else
-			keyState &= ~downBit;	
+			translationState &= ~T_DOWN_BIT;	
 		break;
 	case INPUT_KEY_D:
 		if(event == input::KEY_PRESSED)
-			keyState |= rightBit;
+			translationState |= T_RIGHT_BIT;
 		else
-			keyState &= ~rightBit;
+			translationState &= ~T_RIGHT_BIT;
 		break;
 	case INPUT_KEY_Q:
 		if(event == input::KEY_PRESSED)
-			keyState |= ccwBit;
+			rotationState |= R_CCW_BIT;
 		else
-			keyState &= ~ccwBit;
+			rotationState &= ~R_CCW_BIT;
 		break;
 	case INPUT_KEY_E:
 		if(event == input::KEY_PRESSED)
-			keyState |= cwBit;
+			rotationState |= R_CW_BIT;
 		else
-			keyState &= ~cwBit;
+			rotationState &= ~R_CW_BIT;
 		break;
 	case INPUT_KEY_L_CTRL:
 		if(event == input::KEY_PRESSED)
-			keyState |= outBit;
+			translationState |= T_OUT_BIT;
 		else
-			keyState &= ~outBit;
+			translationState &= ~T_OUT_BIT;
 		break;
 	case INPUT_KEY_L_SHFT:
 		if(event == input::KEY_PRESSED)
-			keyState |= inBit;
+			translationState |= T_IN_BIT;
 		else
-			keyState &= ~inBit;
+			translationState &= ~T_IN_BIT;
 		break;
 	default:
 		assert(false);

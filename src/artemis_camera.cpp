@@ -68,9 +68,19 @@ void Camera::panOut(float dis) {
 	updateView();
 }
 
+//TODO, I'm sure there's a better way to do this....
 void Camera::rotateCCW(float radians) {
+	auto alignVec = center - eye;
+	auto rotVec = glm::rotate(alignVec, radians, up);
+	center += alignVec - rotVec;
+	updateView();
 }
 
+//TODO, I'm sure there's a better way to do this....
 void Camera::rotateCW(float radians) {
+	auto alignVec = center - eye;
+	auto rotVec = glm::rotate(alignVec, radians, -1.0f * up);
+	center += alignVec - rotVec;
+	updateView();
 }
 
