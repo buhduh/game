@@ -23,6 +23,9 @@ class Camera {
 	void panOut(float);
 	void rotateCCW(float);
 	void rotateCW(float);
+	void rotateIn(float);
+	void rotateOut(float);
+	void snapToOrigin();
 	private:
 	void updateView();
 	Camera(glm::vec3, glm::vec3, glm::vec3);

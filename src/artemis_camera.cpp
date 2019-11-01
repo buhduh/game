@@ -17,6 +17,8 @@ Camera* Camera::newCamera(
 	return toRet;
 }
 
+//up probably doesn't need to be set every time, only if it becomes
+//a problem
 void Camera::updateView() {
 	view = glm::lookAt(eye, center, up);
 	up = glm::vec3(view[0][1], view[1][1], view[2][1]);
@@ -84,3 +86,21 @@ void Camera::rotateCW(float radians) {
 	updateView();
 }
 
+//TODO, I'm sure there's a better way to do this....
+void Camera::rotateIn(float radians) {
+	auto rotVec = glm::rotate(up, radians, (center - eye));
+	up += rotVec;
+	updateView();
+}
+
+//TODO, I'm sure there's a better way to do this....
+void Camera::rotateOut(float radians) {
+	auto rotVec = glm::rotate(up, radians, (eye - center));
+	up += rotVec;
+	updateView();
+}
+
+void Camera::snapToOrigin() {
+	center = glm::vec3(0.0f);
+	updateView();
+}

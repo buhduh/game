@@ -8,6 +8,8 @@
 #include "artemis_input.hpp"
 #include "artemis_camera.hpp"
 
+static bool run = true;
+
 //translations
 static const uint8_t T_UP_BIT    =  1 << 0;
 static const uint8_t T_LEFT_BIT  =  1 << 1;
@@ -22,6 +24,8 @@ static const uint8_t R_CCW_BIT  = 1 << 0;
 static const uint8_t R_CW_BIT   = 1 << 1;
 static const uint8_t R_UP_BIT   = 1 << 2;
 static const uint8_t R_DOWN_BIT = 1 << 3;
+static const uint8_t R_IN_BIT   = 1 << 4;
+static const uint8_t R_OUT_BIT =  1 << 5;
 volatile static uint8_t rotationState = 0;
 
 
@@ -49,10 +53,10 @@ void updateCamera(Camera* camera, float time) {
 	} else if(translationState & T_DOWN_BIT && !(translationState & T_UP_BIT)) {
 		camera->panDown(time);
 	}
-	if(rotationState & R_CCW_BIT && !(rotationState & R_CW_BIT)) {
-		camera->rotateCCW(ANGULAR_VEL * time);
-	} else if(rotationState & R_CW_BIT && !(rotationState & R_CCW_BIT)) {
-		camera->rotateCW(ANGULAR_VEL * time);
+	if(rotationState & R_IN_BIT && !(rotationState & R_OUT_BIT)) {
+		camera->rotateIn(ANGULAR_VEL * time);
+	} else if(rotationState & R_OUT_BIT && !(rotationState & R_IN_BIT)) {
+		camera->rotateOut(ANGULAR_VEL * time);
 	}
 	if(translationState & T_IN_BIT && !(translationState & T_OUT_BIT)) {
 		camera->panIn(time);
@@ -89,15 +93,15 @@ void cbAction(input::Context* context, input::key_t key, input::event_t event) {
 		break;
 	case INPUT_KEY_Q:
 		if(event == input::KEY_PRESSED)
-			rotationState |= R_CCW_BIT;
+			rotationState |= R_OUT_BIT;
 		else
-			rotationState &= ~R_CCW_BIT;
+			rotationState &= ~R_OUT_BIT;
 		break;
 	case INPUT_KEY_E:
 		if(event == input::KEY_PRESSED)
-			rotationState |= R_CW_BIT;
+			rotationState |= R_IN_BIT;
 		else
-			rotationState &= ~R_CW_BIT;
+			rotationState &= ~R_IN_BIT;
 		break;
 	case INPUT_KEY_L_CTRL:
 		if(event == input::KEY_PRESSED)
@@ -116,7 +120,11 @@ void cbAction(input::Context* context, input::key_t key, input::event_t event) {
 	}
 }
 
-void initializeInput(input::Context* context) {
+void initializeInput(input::Context* context, Camera* camera) {
+	//so lambdas can't create closures around local variables and behave as
+	//function pointers.  Like what is the fucking point of them?
+	static Camera* fuckingStupid = camera;
+	//translations
 	auto res = input::addCallbackToContext(
 		context, input::KEY_PRESSED, INPUT_KEY_W, cbAction
 	);
@@ -149,7 +157,22 @@ void initializeInput(input::Context* context) {
 		context, input::KEY_PRESSED, INPUT_KEY_L_SHFT, cbAction
 	);
 	assert(res);
+	res = input::addCallbackToContext(
+		context, input::KEY_PRESSED, INPUT_KEY_R,
+		[](input::Context*, input::key_t, input::event_t) {
+			fuckingStupid->snapToOrigin();	
+		}
+	);
+	assert(res);
+	res = input::addCallbackToContext(
+		context, input::KEY_PRESSED, INPUT_KEY_ESC,
+		[](input::Context*, input::key_t, input::event_t) {
+			run = false;
+		}
+	);
+	assert(res);
 
+	//rotations
 	res = input::addCallbackToContext(
 		context, input::KEY_RELEASED, INPUT_KEY_W, cbAction
 	);
@@ -207,11 +230,11 @@ int main(void) {
 	input::initializeInputSystem(arena, window);
 	input::Context* context = input::requestNewContext();
 	input::enableContext(context);
-	initializeInput(context);
+	initializeInput(context, camera);
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
-	while(!platform::shouldCloseWindow(window)) {
+	while(!platform::shouldCloseWindow(window) && run) {
 		stackArena->reset();	
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = 
