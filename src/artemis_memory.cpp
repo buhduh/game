@@ -91,7 +91,13 @@ ConstantPoolArena* GameMemory::newConstantPoolArena(
 		memcpy(where, &ph, sizeof(ph));
 		where = (void*) ph.next;
 	}
-	ph.next = nullptr;
+	{
+		//the last poolheader needs to point to null
+		//and where needs to be incremented
+		ph.next = nullptr;
+		memcpy(where, &ph, sizeof(ph));
+		where = toPtr(toUPtr(where) + poolSize);
+	}
 	ConstantPoolArena temp = ConstantPoolArena(
 		numPools, elemsPerPool, 
 		poolSize, start
