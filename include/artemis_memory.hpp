@@ -30,11 +30,34 @@ class StackArena : virtual public IArena {
 	const size_t size;
 };
 
+struct PoolHeader{
+	PoolHeader* next;
+};
+
+class ConstantPoolArena : virtual public IArena {
+	public:
+	ConstantPoolArena(size_t, size_t, size_t, void*);
+	void* allocate(size_t) override;
+	void deallocate(void*) override;
+	private:
+	size_t numPools;
+	size_t elemsPerPool;
+	size_t poolSize;
+	PoolHeader* head;
+	void* start;
+	void* end;
+};
+
 class GameMemory {
 	public:
 	GameMemory(size_t);
 	~GameMemory();
 	StackArena* newStackArena(size_t);
+	ConstantPoolArena* newConstantPoolArena(
+		size_t numPools, 
+		size_t elemsPerPool, 
+		size_t elemSize
+	);
 	private:
 	GameMemory(GameMemory&&) = delete;
 	GameMemory(const GameMemory&) = delete;

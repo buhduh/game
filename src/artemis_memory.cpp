@@ -75,6 +75,66 @@ void StackArena::deallocate(void* ptr) {
 	sp = ptr;
 }
 
+ConstantPoolArena* GameMemory::newConstantPoolArena(
+	size_t numPools, 
+	size_t elemsPerPool,
+	size_t elemSize
+)
+{
+	size_t poolSize = alignAddress(
+		(elemSize * elemsPerPool), platform::getCacheLineSize()
+	);
+	PoolHeader ph;
+	void* start = where;
+	for(size_t i = 0; i < numPools - 1; ++i) {
+		ph.next = (PoolHeader*) toPtr(toUPtr(where) + poolSize);
+		memcpy(where, &ph, sizeof(ph));
+		where = (void*) ph.next;
+	}
+	ph.next = nullptr;
+	ConstantPoolArena temp = ConstantPoolArena(
+		numPools, elemsPerPool, 
+		poolSize, start
+	);
+	ConstantPoolArena* toRet = (ConstantPoolArena*) memcpy(
+		where, &temp, sizeof(ConstantPoolArena)
+	);
+	where = toPtr(toUPtr(where) + sizeof(ConstantPoolArena));
+	where = alignPointer(where, platform::getCacheLineSize());
+	return toRet;
+}
+
 void StackArena::reset() {
 	sp = const_cast<void*>(start);
+}
+
+ConstantPoolArena::ConstantPoolArena(
+	size_t numPools, 
+	size_t elemsPerPool,
+	size_t poolSize,
+	void* _head
+)
+	: numPools(numPools)
+	, elemsPerPool(elemsPerPool)
+	, poolSize(poolSize)
+{
+	head = (PoolHeader*) _head;
+	start = _head;
+	end = toPtr(toUPtr(start) + numPools * poolSize);
+}
+
+void* ConstantPoolArena::allocate(size_t size) {
+	assert(size <= poolSize);
+	assert(head);
+	void* toRet = (void*) head;
+	head = head->next;
+	return toRet;
+}
+
+void ConstantPoolArena::deallocate(void* _ptr) {
+	assert(toUPtr(start) <= toUPtr(_ptr) && toUPtr(end) > toUPtr(_ptr));
+	PoolHeader* ptr = (PoolHeader*) _ptr;
+	PoolHeader* temp = head;
+	head = ptr;
+	ptr->next = temp;
 }
