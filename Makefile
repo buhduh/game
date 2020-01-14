@@ -1,7 +1,8 @@
 #TODO Really need to sort these flags out
 
-CFLAGS = -std=c++17 -I$(VULKAN_SDK)/include -Iinclude -I$(HOME)/include -DDEBUG
-LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
+DIR = $(shell pwd)
+export CFLAGS = -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -DDEBUG
+export LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 
@@ -40,7 +41,17 @@ BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV) $(WAVEFRONT_
 
 EXE = bin/game
 
-all: $(BUILD_DIRS) $(EXE) $(WAVEFRONT_ASSETS) shaders
+all: depend $(BUILD_DIRS) $(EXE) $(WAVEFRONT_ASSETS) shaders
+
+depend: .depend 
+	@echo > /dev/null
+
+.depend: $(ALL_SRC) $(SPIKE_SRC) $(wildcard include/*.hpp)
+	@rm -f ./.depend
+	g++ $(CFLAGS) -MM $^ >> ./.depend;
+	@sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+
+include .depend
 
 test: $(BUILD_DIRS) $(TEST_BIN)
 	$(TEST_BIN)
@@ -60,7 +71,7 @@ $(EXE): $(ALL_OBJ)
 	g++ -g $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(ALL_OBJ): build/%.o: src/%.cpp
-	g++ -g $(CFLAGS) -o $@ -c $^ $(LDFLAGS)
+	g++ -g $(CFLAGS) -o $@ -c $< $(LDFLAGS)
 
 spike: $(BUILD_DIRS) $(OBJ) $(SPIKE_BIN)
 
@@ -82,10 +93,11 @@ $(WAVEFRONT_TOOL): $(WAVEFRONT_BLD)
 $(WAVEFRONT_BLD):
 
 clean:
-	rm -rf $(filter-out ./, $(BUILD_DIRS))
+	@rm -rf $(filter-out ./, $(BUILD_DIRS))
+	@rm -f .depend
 	@$(MAKE) -C tools clean
 
 clean_spike:
 	@rm -f bin/spike_*
 
-.PHONY: all wavefront shaders spike
+.PHONY: all wavefront shaders spike depend
