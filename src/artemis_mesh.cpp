@@ -1,15 +1,34 @@
 #include "artemis_mesh.hpp"
 
 Mesh::Mesh(
-	vertexindex_t numVerts, vertexindex_t numIndeces, 
-	vertex_t* verts, vertexindex_t* indeces) :
-	numVerts(numVerts), numIndeces(numIndeces),
-	vertices(verts), indeces(indeces)
+	meshint_t numVerts, 
+	meshint_t numNormals, 
+	meshint_t numIndeces, 
+	vertexbuffer_t verts, 
+	normalbuffer_t normals,
+	indexbuffer_t indeces
+) 
+	: numVerts(numVerts)
+	, numNormals(numNormals)
+	, numIndeces(numIndeces)
+	, vertices(verts)
+	, normals(normals)
+	, indeces(indeces)
 {}
 
-Mesh::Mesh() : numVerts(0), numIndeces(0), vertices(nullptr), indeces(nullptr) {}
+Mesh::Mesh() 
+	: numVerts(0)
+	, numNormals(0)
+	, numIndeces(0)
+	, vertices(nullptr)
+	, normals(nullptr)
+	, indeces(nullptr) 
+{}
+
 
 //derefences the lists and returns ALL memory consumed
+//not sure if i even need this...
+/*
 size_t Mesh::getSizeOf() {
 	size_t numVertsSize = sizeof(numVerts);
 	size_t vertSize = sizeof(vertex_t) * numVerts;
@@ -17,21 +36,46 @@ size_t Mesh::getSizeOf() {
 	size_t indexSize = sizeof(vertexindex_t) * numIndeces;
 	return numVertsSize + vertSize + numIndecesSize + indexSize;
 }
+*/
 
-//TODO verify meshes don't blow past allocated memory
-MeshOrganizer::MeshOrganizer(IArena* _arena) :
-	arena(_arena)
-{
-	vertexBuffer = (vertexbuffer_t) arena->allocate(VERTEX_BUFFER_SIZE);
-	indexBuffer = (indexbuffer_t) arena->allocate(INDEX_BUFFER_SIZE);
-	vertexBufferEnd = vertexBuffer;
-	indexBufferEnd = indexBuffer;
+MeshMemoryManager::MeshMemoryManager(
+	IArena* vertArena,
+	IArena* normalArena,
+	IArena* indexArena
+) : vertArena(vertArena)
+  , normalArena(normalArena)
+  , indexArena(indexArena)
+  , gameMemory(nullptr)
+  , meshCount(0)
+{}
+
+//TODO will need to probably use better arenas
+MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory) 
+  : gameMemory(gMemory)
+  , meshCount(0)
+{	
+	vertArena = gameMemory->newStackArena(
+		sizeof(vertex_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
+	);
+	normalArena = gameMemory->newStackArena(
+		sizeof(normal_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
+	);
+	indexArena = gameMemory->newStackArena(
+		sizeof(index_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
+	);
+}
+
+MeshMemoryManager::~MeshMemoryManager() {
+	if(gameMemory) {
+		
+	}
 }
 
 bool Mesh::isNil() {
 	return numVerts == 0;
 }
 
+/*
 size_t getSizeOfVertexBuffer(Mesh* mesh, meshcount_t numMeshes) {
 	vertexindex_t totVerts = 0;
 	for(meshcount_t i = 0; i < numMeshes; i++) {
@@ -39,7 +83,13 @@ size_t getSizeOfVertexBuffer(Mesh* mesh, meshcount_t numMeshes) {
 	}
 	return sizeof(vertex_t) * totVerts;
 }
+*/
 
+std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
+	out << "mesh printer not implemented";
+	return out;
+}
+/*
 std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
 	out << "vertex count: " << mesh.numVerts << std::endl;
 	out << "index count: " << mesh.numIndeces << std::endl;
@@ -66,3 +116,4 @@ std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
 	}
 	return out;
 }
+*/

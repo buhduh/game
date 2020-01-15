@@ -18,13 +18,15 @@ enum TYPE {
 	VERTEX,
 	FACE,
 	OBJECT,
+	NORMAL,
 	NONE
 };
 
 const static std::unordered_map<std::string, TYPE> TYPE_MAP {
 	{"v ", VERTEX},
 	{"f ", FACE},
-	{"o ", OBJECT}
+	{"o ", OBJECT},
+	{"vn", NORMAL}
 };
 
 struct ParsedArgs {
@@ -33,19 +35,25 @@ struct ParsedArgs {
 };
 
 struct VertexTracker {
-	vertexindex_t vIndex;	
+	meshint_t vIndex;	
 	vertexbuffer_t vBuffer;
 };
 
 struct FaceTracker {
-	vertexindex_t fIndex;
+	meshint_t fIndex;
 	indexbuffer_t fBuffer;
+};
+
+struct NormalTracker {
+	meshint_t nIndex;
+	normalbuffer_t nBuffer;
 };
 
 struct Object {
 	std::string name;
 	VertexTracker* vTracker;
 	FaceTracker* fTracker;
+	NormalTracker* nTracker;
 };
 
 //definitely not thread safe
@@ -54,6 +62,8 @@ const static std::regex VERT_PATT(
 	R"(v (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)$)");
 const static std::regex FACE_PATT(
 	R"(f (\d+)/\d*/\d* (\d+)/\d*/\d* (\d+)/\d*/\d*$)");
+const static std::regex NORMAL_PATT(
+	R"(vn (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)$)");
 
 ParsedArgs parseArgs(int, char**);
 bool checkInFile(std::string);
@@ -61,6 +71,7 @@ void errorAndBail(std::string);
 TYPE getTypeFromString(std::string);
 bool processVertexLine(std::string, VertexTracker*);
 bool processFaceLine(std::string, FaceTracker*);
+bool processNormalLine(std::string, NormalTracker*);
 void processNoneLine(std::string);
 bool processObjectLine(std::string, Object*);
 bool writeObject(ParsedArgs*, Object*);

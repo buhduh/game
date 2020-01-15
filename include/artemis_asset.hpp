@@ -16,8 +16,8 @@ struct MeshFileHeader {
 };
 
 struct MeshHeader {
-	vertexindex_t numVerts;
-	vertexindex_t numIndeces;
+	meshint_t numVerts;
+	meshint_t numIndeces;
 	//where the mesh is in the asset file relative to the end
 	//of the MeshHeader list.
 	uintptr_t offset;

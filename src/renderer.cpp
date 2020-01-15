@@ -19,7 +19,7 @@ namespace renderer {
 		const meshcount_t numMeshes, const Mesh* meshes
 	) {
 		size_t tot = 0;
-		size_t indexSize = sizeof(vertexindex_t);
+		size_t indexSize = sizeof(index_t);
 		for(meshcount_t i = 0; i < numMeshes; ++i) {
 			tot += (meshes[i].numIndeces * indexSize);
 		}

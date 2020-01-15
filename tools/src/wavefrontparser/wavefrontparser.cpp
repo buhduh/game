@@ -29,21 +29,29 @@ TYPE getTypeFromString(std::string line) {
 	return type->second;
 }
 
+bool processNormalLine(std::string line, NormalTracker* nTracker) {
+	STD_LOG("processed normal line: " << line);
+	return true;
+}
+
 bool processFaceLine(std::string line, FaceTracker* fTracker) {
+	STD_LOG("processed face line: " << line);
+	/*
 	STD_LOG("processed face line: " << line);
 	if(!std::regex_match(line.c_str(), match, FACE_PATT)) {
 		return false;
 	}
-	if(fTracker->fIndex + 3 > MAX_VERTS) {
+	if(fTracker->fIndex + 3 > MAX_MESH_BUFFER_SZ) {
 		return false;
 	}
 	//should always be multiples of 3, what happens if we end up doing different
 	//topologies?
 	for(int i = 1; i <= 3; i++) {
-		fTracker->fBuffer[fTracker->fIndex++] = static_cast<vertexindex_t>((
+		fTracker->fBuffer[fTracker->fIndex++] = static_cast<index_t>((
 			atoi(match.str(i).c_str()) - 1)
 		);
 	}
+	*/
 	return true;
 }
 
@@ -62,7 +70,7 @@ void processNoneLine(std::string line) {
 
 bool processVertexLine(std::string line, VertexTracker* vTracker) {
 	STD_LOG("processed vertex line: " << line);
-	if(vTracker->vIndex == MAX_VERTS) {
+	if(vTracker->vIndex == MAX_MESH_BUFFER_SZ) {
 		return false;
 	}
 	if(!std::regex_match(line.c_str(), match, VERT_PATT)) {
@@ -77,6 +85,7 @@ bool processVertexLine(std::string line, VertexTracker* vTracker) {
 }
 
 bool writeObject(ParsedArgs* pArgs, Object* object) {
+	/*
 	FILE* oFile = fopen(pArgs->outFile.c_str(), "wb+");
 	if(oFile == nullptr) {
 		STD_ERR("Could not open outFile for writing: " << pArgs->outFile);
@@ -112,5 +121,6 @@ bool writeObject(ParsedArgs* pArgs, Object* object) {
 	);
 	assert(numWrite == object->fTracker->fIndex);
 	fclose(oFile);
+	*/
 	return true;
 }

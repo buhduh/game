@@ -41,7 +41,7 @@ GameMemory::~GameMemory() {
 //any thought of reclaiming
 //TODO
 StackArena* GameMemory::newStackArena(size_t size) {
-	StackArena sa(size, where);
+	StackArena sa(size, where, this);
 	StackArena* toRet = (StackArena*) memcpy(where, &sa, sizeof(sa));
 	uintptr_t tWhere = toUPtr(where);
 	tWhere += size + sizeof(sa);

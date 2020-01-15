@@ -14,6 +14,11 @@ Mesh getMeshAsset(const std::string name, MeshOrganizer* mOrganizer) {
 }
 
 //TODO verify meshes don't blow past allocated memory
+//TODO gonna need to rethink this once normals are in place
+Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
+	return Mesh();
+}
+/*
 Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
 	std::vector<std::string> files = platform::getFilesInDir(std::string(MESH_ASSET_DIR));
 	MeshFileHeader mFileHeader;
@@ -53,6 +58,7 @@ Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
 	}
 	return Mesh();
 }
+*/
 
 std::ostream& operator<<(std::ostream& out, const meshassets_t& mAssets) {
 	for(auto i = mAssets.begin(); i != mAssets.end(); ++i) {

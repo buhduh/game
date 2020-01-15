@@ -12,44 +12,69 @@
 #define VERTEX_BUFFER_SIZE megabytes(32)
 #define INDEX_BUFFER_SIZE megabytes(32)
 
+#if 0
+#define MAX_MESH_BUFFER_SZ UINT16_MAX
 #define MAX_MESH_NAME UINT8_MAX
+#endif
 
-//these must match, change them concurrently
-#define MAX_VERTS UINT16_MAX
-typedef uint16_t vertexindex_t ;
+const static uint8_t MAX_MESH_NAME = UINT8_MAX;
+/*
+	The maximum number of elements a mesh can have for its 
+	respective buffers.
+*/
+typedef uint16_t meshint_t;
+const static meshint_t MAX_MESH_BUFFER_SZ = UINT16_MAX;
+/*
+	The maximum number of meshes a MeshMemoryManager
+	will manage.
+*/
+const static meshint_t MAX_MESH_COUNT = UINT16_MAX;
+
+typedef glm::uvec3 index_t;
 typedef glm::vec3 vertex_t;
+typedef glm::vec3 normal_t;
 typedef vertex_t* vertexbuffer_t;
-typedef vertexindex_t* indexbuffer_t;
+typedef index_t* indexbuffer_t;
+typedef normal_t* normalbuffer_t;
 
 //for now the buffers are pointers into the MeshOrganizer
 class Mesh {
 	public:
-	Mesh(vertexindex_t, vertexindex_t, vertex_t*, vertexindex_t*);
+	Mesh(
+		meshint_t numVerts, 
+		meshint_t numNormals,
+		meshint_t numIndeces, 
+		vertexbuffer_t verts, 
+		normalbuffer_t normals,
+		indexbuffer_t indeces
+	);
 	Mesh();
 	size_t getSizeOf();
-	vertexindex_t numVerts;
-	vertexindex_t numIndeces;
+	meshint_t numVerts;
+	meshint_t numNormals;
+	meshint_t numIndeces;
 	vertexbuffer_t vertices;
+	normalbuffer_t normals;
 	indexbuffer_t indeces;  
 	bool isNil();
 	friend std::ostream& operator<<(std::ostream&, const Mesh&);
 };
 
-//Memory organization stuff goes here
-//TODO don't blow past buffer sizes when adding meshes
-//the renderer will blow up if vertex list
-//isn't contiguous in memory!!!
-class MeshOrganizer {
+class MeshMemoryManager {
 	public:
-	MeshOrganizer(IArena*);
-	vertex_t* vertexBufferEnd;
-	vertexindex_t* indexBufferEnd;
-	vertexbuffer_t vertexBuffer;
-	indexbuffer_t indexBuffer;
+	MeshMemoryManager(
+		IArena* vertArena,
+		IArena* normalArena,
+		IArena* indexArena
+	);
+	MeshMemeoryManager(GameMemory*);
+	~MeshMemoryManager();
 	private:
-	IArena* arena;
+	GameMemory* gameMemory;
+	IArena* vertArena;
+	IArena* normalArena;
+	IArena* indexArena;
+	meshint_t meshCount;	
 };
-
-size_t getSizeOfVertexBuffer(Mesh*, meshcount_t);
 
 #endif

@@ -15,25 +15,29 @@ int main(int argc, char* argv[]) {
 		QUIT("Unable to find and/or open inFile: " << pArgs.inFile);
 	}
 	std::ifstream inFile(pArgs.inFile, std::ifstream::in|std::ifstream::binary);
-	int lineN = 1;
 	std::string line;
-	glm::vec3 vertBuffer[MAX_VERTS] = {glm::vec3(0)};
-	//not sure if this needs to be bigger
-	vertexindex_t indexBuffer[MAX_VERTS] = {0};
+	vertex_t vertBuffer[MAX_MESH_BUFFER_SZ] = {vertex_t(0)};
+	index_t indexBuffer[MAX_MESH_BUFFER_SZ] = {index_t(0)};
+	normal_t normalBuffer[MAX_MESH_BUFFER_SZ] = {normal_t(0)};
 	VertexTracker vTracker = VertexTracker{
 		vIndex: 0,
 		vBuffer: vertBuffer,
 	};
 	FaceTracker fTracker = FaceTracker{
 		fIndex: 0,
-		fBuffer: indexBuffer
+		fBuffer: indexBuffer,
+	};
+	NormalTracker nTracker = NormalTracker{
+		nIndex: 0,
+		nBuffer: normalBuffer,
 	};
 	Object object = Object{
 		name: std::string(""),
 		vTracker: &vTracker,
 		fTracker: &fTracker,
+		nTracker: &nTracker,
 	};
-	for(; std::getline(inFile, line); lineN++) {
+	for(;std::getline(inFile, line);) {
 		if(line.empty()) continue;
 		TYPE type = getTypeFromString(line);
 		switch(type) {
@@ -55,6 +59,13 @@ int main(int argc, char* argv[]) {
 			{
 				if(!processObjectLine(line, &object)) {
 					QUIT("Failed parsing object line:\n\t" << line);
+				}
+				break;
+			}
+			case NORMAL:
+			{
+				if(!processNormalLine(line, &nTracker)) {
+					QUIT("Failed parsing normal line:\n\t" << line);
 				}
 				break;
 			}
