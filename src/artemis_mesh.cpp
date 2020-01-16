@@ -49,6 +49,18 @@ MeshMemoryManager::MeshMemoryManager(
   , meshCount(0)
 {}
 
+//TODO, here
+Mesh* MeshMemoryManager::newMesh(
+	meshint_t numVerts, 
+	meshint_t numNormals,
+	meshint_t numIndeces, 
+	vertexbuffer_t verts, 
+	normalbuffer_t normals,
+	indexbuffer_t indeces
+)
+{
+}
+
 //TODO will need to probably use better arenas
 MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory) 
   : gameMemory(gMemory)
@@ -65,10 +77,12 @@ MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory)
 	);
 }
 
+//don't deallocate the arenas if the memory manager didn't make them
 MeshMemoryManager::~MeshMemoryManager() {
-	if(gameMemory) {
-		
-	}
+	if(!gameMemory) return;
+	gameMemory->deallocateArena(vertArena);
+	gameMemory->deallocateArena(normalArena);
+	gameMemory->deallocateArena(indexArena);
 }
 
 bool Mesh::isNil() {

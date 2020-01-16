@@ -24,7 +24,7 @@ struct MeshHeader {
 	char name[MAX_MESH_NAME];
 };
 
-Mesh getMeshAsset(const std::string, MeshOrganizer*);
-Mesh loadMeshFromAssetDir(const std::string, MeshOrganizer*);
+Mesh getMeshAsset(const std::string, MeshMemoryManager*);
+Mesh loadMeshFromAssetDir(const std::string, MeshMemoryManager*);
 
 #endif

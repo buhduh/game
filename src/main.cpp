@@ -216,9 +216,12 @@ int main(void) {
 	platform::Window* window = platform::createWindow();
 	platform::initializeInput(window);
 	IArena* arena = new StupidArena();
+	/*
+	TODO with newer mesh structure
 	MeshOrganizer mOrganizer(arena);
 	Mesh mesh1 = getMeshAsset("Cube", &mOrganizer);
 	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, &mesh1);
+	*/
 
 	Camera* camera = Camera::newCamera(
 		arena, 
@@ -245,7 +248,8 @@ int main(void) {
 		platform::pollEvents();
 		updateCamera(camera, time);
 		auto ubo = constructUBO(stackArena, camera);	
-		vulkan.drawFrame(ubo);	
+		//TODO so it compiles
+		//vulkan.drawFrame(ubo);	
 	}
 	platform::destroyWindow(window);
 }

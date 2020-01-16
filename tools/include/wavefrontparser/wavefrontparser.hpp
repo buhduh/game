@@ -61,7 +61,7 @@ static std::cmatch match;
 const static std::regex VERT_PATT(
 	R"(v (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)$)");
 const static std::regex FACE_PATT(
-	R"(f (\d+)/\d*/\d* (\d+)/\d*/\d* (\d+)/\d*/\d*$)");
+	R"(f (\d+)/\d*/(\d+) (\d+)/\d*/(\d+) (\d+)/\d*/(\d+)$)");
 const static std::regex NORMAL_PATT(
 	R"(vn (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)$)");
 
@@ -73,7 +73,7 @@ bool processVertexLine(std::string, VertexTracker*);
 bool processFaceLine(std::string, FaceTracker*);
 bool processNormalLine(std::string, NormalTracker*);
 void processNoneLine(std::string);
-bool processObjectLine(std::string, Object*);
+bool processObjectLine(std::string, Object*, MeshMemoryManager*, Mesh*, meshint_t);
 bool writeObject(ParsedArgs*, Object*);
 
 #endif

@@ -36,8 +36,6 @@ bool processNormalLine(std::string line, NormalTracker* nTracker) {
 
 bool processFaceLine(std::string line, FaceTracker* fTracker) {
 	STD_LOG("processed face line: " << line);
-	/*
-	STD_LOG("processed face line: " << line);
 	if(!std::regex_match(line.c_str(), match, FACE_PATT)) {
 		return false;
 	}
@@ -46,16 +44,31 @@ bool processFaceLine(std::string line, FaceTracker* fTracker) {
 	}
 	//should always be multiples of 3, what happens if we end up doing different
 	//topologies?
-	for(int i = 1; i <= 3; i++) {
-		fTracker->fBuffer[fTracker->fIndex++] = static_cast<index_t>((
-			atoi(match.str(i).c_str()) - 1)
-		);
-	}
-	*/
+	fTracker->fBuffer[fTracker->fIndex++] = index_t(
+		atoi(match.str(1).c_str()) - 1,
+		0,
+		atoi(match.str(2).c_str()) - 1
+	);
+	fTracker->fBuffer[fTracker->fIndex++] = index_t(
+		atoi(match.str(3).c_str()) - 1,
+		0,
+		atoi(match.str(4).c_str()) - 1
+	);
+	fTracker->fBuffer[fTracker->fIndex++] = index_t(
+		atoi(match.str(5).c_str()) - 1,
+		0,
+		atoi(match.str(6).c_str()) - 1
+	);
 	return true;
 }
 
-bool processObjectLine(std::string line, Object* object) {
+bool processObjectLine(
+	std::string line, 
+	Object* object, 
+	MeshMemoryManager* memManager, 
+	Mesh* meshList, 
+	meshint_t* numMeshes
+) {
 	if(line.substr(2).size() - 2 > MAX_MESH_NAME) {
 		return false;
 	}

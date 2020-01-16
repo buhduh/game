@@ -24,6 +24,10 @@ void StupidArena::deallocate(void* ptr) {
 	platform::deallocatePlatformMemory(ptr);
 }
 
+//TODO
+void GameMemory::deallocateArena(IArena* arena) {
+}
+
 GameMemory::GameMemory(size_t size) {
 	marker = platform::allocatePlatformMemory(size);
 	uintptr_t tEnd = toUPtr(marker) + size;
@@ -49,11 +53,16 @@ StackArena* GameMemory::newStackArena(size_t size) {
 	return toRet;
 }
 
+StackArena::~StackArena() {
+	STD_LOG("~StackArena not implemented, TODO");
+}
+
 //start is cache line aligned before calling this
 //this is a little rough around the edges, doesn't quite work for
 //allocations EXACTLY equal to initialized size due to alignment
-StackArena::StackArena(size_t size, void* where) :
-	size(size)
+StackArena::StackArena(size_t size, void* where, GameMemory* gMemory) 
+	: size(size)
+	, gameMemory(gMemory)
 {
 	uintptr_t tSP = toUPtr(where) + sizeof(*this);
 	sp = alignPointer(toPtr(tSP), platform::getCacheLineSize());

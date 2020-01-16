@@ -37,6 +37,7 @@ int main(int argc, char* argv[]) {
 		fTracker: &fTracker,
 		nTracker: &nTracker,
 	};
+	meshint_t processedMeshes = 0;
 	for(;std::getline(inFile, line);) {
 		if(line.empty()) continue;
 		TYPE type = getTypeFromString(line);
@@ -57,7 +58,7 @@ int main(int argc, char* argv[]) {
 			}
 			case OBJECT:
 			{
-				if(!processObjectLine(line, &object)) {
+				if(!processObjectLine(line, &object, &meshMemManager, &processedMeshes)) {
 					QUIT("Failed parsing object line:\n\t" << line);
 				}
 				break;

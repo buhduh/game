@@ -67,8 +67,16 @@ class MeshMemoryManager {
 		IArena* normalArena,
 		IArena* indexArena
 	);
-	MeshMemeoryManager(GameMemory*);
+	MeshMemoryManager(GameMemory*);
 	~MeshMemoryManager();
+	Mesh* newMesh(
+		meshint_t numVerts, 
+		meshint_t numNormals,
+		meshint_t numIndeces, 
+		vertexbuffer_t verts, 
+		normalbuffer_t normals,
+		indexbuffer_t indeces
+	)
 	private:
 	GameMemory* gameMemory;
 	IArena* vertArena;

@@ -4,18 +4,18 @@
 #include "platform.hpp"
 #include "artemis_asset.hpp"
 
-Mesh getMeshAsset(const std::string name, MeshOrganizer* mOrganizer) {
+Mesh getMeshAsset(const std::string name, MeshMemoryManager* mMemManager) {
 	if(MeshAssets.count(name)) {
 		return MeshAssets[name];
 	}
-	Mesh mesh = loadMeshFromAssetDir(name, mOrganizer);
+	Mesh mesh = loadMeshFromAssetDir(name, mMemManager);
 	assert(!mesh.isNil());
 	return mesh;
 }
 
 //TODO verify meshes don't blow past allocated memory
 //TODO gonna need to rethink this once normals are in place
-Mesh loadMeshFromAssetDir(const std::string name, MeshOrganizer* mOrganizer) {
+Mesh loadMeshFromAssetDir(const std::string name, MeshMemoryManager* mMemManager) {
 	return Mesh();
 }
 /*
