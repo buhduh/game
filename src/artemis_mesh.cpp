@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "artemis_mesh.hpp"
 
 Mesh::Mesh(
@@ -41,15 +43,16 @@ size_t Mesh::getSizeOf() {
 MeshMemoryManager::MeshMemoryManager(
 	IArena* vertArena,
 	IArena* normalArena,
-	IArena* indexArena
+	IArena* indexArena,
+	IArena* meshArena
 ) : vertArena(vertArena)
   , normalArena(normalArena)
   , indexArena(indexArena)
+  , meshArena(meshArena)
   , gameMemory(nullptr)
   , meshCount(0)
 {}
 
-//TODO, here
 Mesh* MeshMemoryManager::newMesh(
 	meshint_t numVerts, 
 	meshint_t numNormals,
@@ -59,6 +62,25 @@ Mesh* MeshMemoryManager::newMesh(
 	indexbuffer_t indeces
 )
 {
+	vertexbuffer_t vertBuffer = 
+		(vertexbuffer_t) vertArena->allocate(sizeof(vertex_t) * numVerts);
+	normalbuffer_t normalBuffer = 
+		(normalbuffer_t) normalArena->allocate(sizeof(normal_t) * numNormals);
+	indexbuffer_t indexBuffer = 
+		(indexbuffer_t) indexArena->allocate(sizeof(vertex_t) * numIndeces);
+	//is verts nil on failure?
+	memcpy(vertBuffer, verts, sizeof(vertex_t) * numVerts);
+	memcpy(normalBuffer, normals, sizeof(normal_t) * numNormals);
+	memcpy(indexBuffer, indeces, sizeof(index_t) * numVerts);
+	Mesh tMesh(
+		numVerts, numNormals, numIndeces, 
+		vertBuffer, normalBuffer, indexBuffer
+	);
+	Mesh* mesh = (Mesh*) meshArena->allocate(sizeof(Mesh*));
+	assert(mesh);
+	*mesh = tMesh;
+	meshCount++;
+	return mesh;
 }
 
 //TODO will need to probably use better arenas
@@ -75,6 +97,9 @@ MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory)
 	indexArena = gameMemory->newStackArena(
 		sizeof(index_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
 	);
+	meshArena = gameMemory->newStackArena(
+		sizeof(Mesh*) * MAX_MESH_COUNT
+	);
 }
 
 //don't deallocate the arenas if the memory manager didn't make them
@@ -83,6 +108,7 @@ MeshMemoryManager::~MeshMemoryManager() {
 	gameMemory->deallocateArena(vertArena);
 	gameMemory->deallocateArena(normalArena);
 	gameMemory->deallocateArena(indexArena);
+	gameMemory->deallocateArena(meshArena);
 }
 
 bool Mesh::isNil() {

@@ -1,3 +1,3 @@
 tried to do a bunch of failed memory crap here.... feature/dale/basicshading
 fuck all that, need to implement faces i think? feature/dale/basicshadingV2
-working on Mesh* MeshMemoryManager::newMesh()
+Doesn't compile, just start there, now MeshMemoryManager() is a manager and a factory class

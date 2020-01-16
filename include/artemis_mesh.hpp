@@ -65,7 +65,8 @@ class MeshMemoryManager {
 	MeshMemoryManager(
 		IArena* vertArena,
 		IArena* normalArena,
-		IArena* indexArena
+		IArena* indexArena,
+		IArena* meshArena
 	);
 	MeshMemoryManager(GameMemory*);
 	~MeshMemoryManager();
@@ -76,12 +77,13 @@ class MeshMemoryManager {
 		vertexbuffer_t verts, 
 		normalbuffer_t normals,
 		indexbuffer_t indeces
-	)
+	);
 	private:
 	GameMemory* gameMemory;
 	IArena* vertArena;
 	IArena* normalArena;
 	IArena* indexArena;
+	IArena* meshArena;
 	meshint_t meshCount;	
 };
 
