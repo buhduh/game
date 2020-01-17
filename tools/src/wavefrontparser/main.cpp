@@ -1,5 +1,6 @@
 #include <string>
 
+#include "artemis_game.hpp"
 #include "wavefrontparser.hpp"
 
 #define EXPECTED_ARGS 3
@@ -37,7 +38,9 @@ int main(int argc, char* argv[]) {
 		fTracker: &fTracker,
 		nTracker: &nTracker,
 	};
-	meshint_t processedMeshes = 0;
+	GameMemory gMem = GameMemory(gigabytes(1));
+	MeshMemoryManager meshMemManager = MeshMemoryManager(&gMem);
+	Mesh meshList[MAX_MESH_COUNT];
 	for(;std::getline(inFile, line);) {
 		if(line.empty()) continue;
 		TYPE type = getTypeFromString(line);
@@ -58,7 +61,7 @@ int main(int argc, char* argv[]) {
 			}
 			case OBJECT:
 			{
-				if(!processObjectLine(line, &object, &meshMemManager, &processedMeshes)) {
+				if(!processObjectLine(line, &object, &meshMemManager, meshList)) {
 					QUIT("Failed parsing object line:\n\t" << line);
 				}
 				break;

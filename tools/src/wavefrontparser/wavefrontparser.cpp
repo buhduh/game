@@ -62,12 +62,12 @@ bool processFaceLine(std::string line, FaceTracker* fTracker) {
 	return true;
 }
 
+//here
 bool processObjectLine(
 	std::string line, 
 	Object* object, 
 	MeshMemoryManager* memManager, 
-	Mesh* meshList, 
-	meshint_t* numMeshes
+	Mesh* meshList
 ) {
 	if(line.substr(2).size() - 2 > MAX_MESH_NAME) {
 		return false;

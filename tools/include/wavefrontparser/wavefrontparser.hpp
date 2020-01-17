@@ -73,7 +73,7 @@ bool processVertexLine(std::string, VertexTracker*);
 bool processFaceLine(std::string, FaceTracker*);
 bool processNormalLine(std::string, NormalTracker*);
 void processNoneLine(std::string);
-bool processObjectLine(std::string, Object*, MeshMemoryManager*, Mesh*, meshint_t);
+bool processObjectLine(std::string, Object*, MeshMemoryManager*, Mesh*);
 bool writeObject(ParsedArgs*, Object*);
 
 #endif

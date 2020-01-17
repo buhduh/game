@@ -72,13 +72,12 @@ Mesh* MeshMemoryManager::newMesh(
 	memcpy(vertBuffer, verts, sizeof(vertex_t) * numVerts);
 	memcpy(normalBuffer, normals, sizeof(normal_t) * numNormals);
 	memcpy(indexBuffer, indeces, sizeof(index_t) * numVerts);
-	Mesh tMesh(
+	Mesh* mesh = (Mesh*) meshArena->allocate(sizeof(Mesh));
+	assert(mesh);
+	*mesh = Mesh(
 		numVerts, numNormals, numIndeces, 
 		vertBuffer, normalBuffer, indexBuffer
 	);
-	Mesh* mesh = (Mesh*) meshArena->allocate(sizeof(Mesh*));
-	assert(mesh);
-	*mesh = tMesh;
 	meshCount++;
 	return mesh;
 }
@@ -98,7 +97,7 @@ MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory)
 		sizeof(index_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
 	);
 	meshArena = gameMemory->newStackArena(
-		sizeof(Mesh*) * MAX_MESH_COUNT
+		sizeof(Mesh) * MAX_MESH_COUNT
 	);
 }
 

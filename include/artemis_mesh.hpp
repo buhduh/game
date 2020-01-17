@@ -7,14 +7,11 @@
 #include "artemis_game.hpp"
 #include "artemis_memory.hpp"
 
-//how much memory to allocate to mesh data
-//may end up ejecting these too
-#define VERTEX_BUFFER_SIZE megabytes(32)
-#define INDEX_BUFFER_SIZE megabytes(32)
-
 #if 0
 #define MAX_MESH_BUFFER_SZ UINT16_MAX
 #define MAX_MESH_NAME UINT8_MAX
+#define VERTEX_BUFFER_SIZE megabytes(32)
+#define INDEX_BUFFER_SIZE megabytes(32)
 #endif
 
 const static uint8_t MAX_MESH_NAME = UINT8_MAX;
@@ -30,9 +27,12 @@ const static meshint_t MAX_MESH_BUFFER_SZ = UINT16_MAX;
 */
 const static meshint_t MAX_MESH_COUNT = UINT16_MAX;
 
+//x is verts, y is textures, z is normals
 typedef glm::uvec3 index_t;
 typedef glm::vec3 vertex_t;
 typedef glm::vec3 normal_t;
+//these buffer_t's are being cast to and from void*
+//be careful if their types change
 typedef vertex_t* vertexbuffer_t;
 typedef index_t* indexbuffer_t;
 typedef normal_t* normalbuffer_t;

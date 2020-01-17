@@ -1,8 +1,8 @@
 #TODO Really need to sort these flags out
 
 DIR = $(shell pwd)
-export CFLAGS = -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -DDEBUG
-export LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
+export CFLAGS := -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -DDEBUG
+export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 
@@ -37,11 +37,15 @@ SHADER_SPV = $(patsubst shaders/%, assets/shaders/%.spv, $(SHADER_SRC))
 SPIKE_SRC = $(wildcard spike/*.cpp)
 SPIKE_BIN = $(patsubst spike/%.cpp, bin/spike_%, $(SPIKE_SRC))
 
-BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV) $(WAVEFRONT_ASSETS) $(ASSETS_DIR)) bin)
-
 EXE = bin/game
+LIBS = lib/libArtemis.a
 
-all: depend $(BUILD_DIRS) $(EXE) $(WAVEFRONT_ASSETS) shaders
+BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV) $(WAVEFRONT_ASSETS) $(ASSETS_DIR) $(LIBS)) bin)
+
+all: depend $(BUILD_DIRS) $(EXE) $(LIBS) $(WAVEFRONT_ASSETS) shaders
+
+$(LIBS): $(OBJ)
+	ar crf $@ $^
 
 depend: .depend 
 	@echo > /dev/null

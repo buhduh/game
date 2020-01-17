@@ -1,7 +1,10 @@
 #Do your best to only need includes here
 #TODO I should probably fix the debugging flags...
 
-CFLAGS = -std=c++17 -fno-exceptions -Iinclude -I../include -I$(HOME)/include -I/home/dale/include/Catch2_git/single_include/catch2
+LIB_DIR = ../lib
+
+CFLAGS := $(CFLAGS) -Iinclude
+LDFLAGS :=  -L$(LIB_DIR) -lArtemis $(LDFLAGS)
 
 BIN_DIR = bin
 
@@ -22,7 +25,7 @@ $(WAVEFRONTPARSER_BLD):
 	@mkdir -p $@
 
 $(WAVEFRONTPARSER_BIN): $(WAVEFRONTPARSER_OBJ)
-	g++ -g -Wall $(CFLAGS) -o $@ $^
+	g++ -g -Wall $(CFLAGS) -o $@ $^ $(LDFLAGS) 
 
 $(WAVEFRONTPARSER_OBJ): build/wavefrontparser/%.o: src/wavefrontparser/%.cpp
 	g++ -g -Wall $(CFLAGS) $(WAVEFRONTPARSER_INC) -o $@ -c $^
