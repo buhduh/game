@@ -2,6 +2,7 @@
 #TODO I should probably fix the debugging flags...
 
 LIB_DIR = ../lib
+LIBS = $(LIB_DIR)/libArtemis.a
 
 CFLAGS := $(CFLAGS) -Iinclude
 LDFLAGS :=  -L$(LIB_DIR) -lArtemis $(LDFLAGS)
@@ -24,7 +25,7 @@ $(BIN_DIR):
 $(WAVEFRONTPARSER_BLD):
 	@mkdir -p $@
 
-$(WAVEFRONTPARSER_BIN): $(WAVEFRONTPARSER_OBJ)
+$(WAVEFRONTPARSER_BIN): $(WAVEFRONTPARSER_OBJ) $(LIBS)
 	g++ -g -Wall $(CFLAGS) -o $@ $^ $(LDFLAGS) 
 
 $(WAVEFRONTPARSER_OBJ): build/wavefrontparser/%.o: src/wavefrontparser/%.cpp

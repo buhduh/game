@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 	};
 	GameMemory gMem = GameMemory(gigabytes(1));
 	MeshMemoryManager meshMemManager = MeshMemoryManager(&gMem);
-	Mesh meshList[MAX_MESH_COUNT];
+	Mesh* meshList[MAX_MESH_COUNT];
 	for(;std::getline(inFile, line);) {
 		if(line.empty()) continue;
 		TYPE type = getTypeFromString(line);
@@ -80,5 +80,8 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-	writeObject(&pArgs, &object);
+	if(!loadMeshFromObject(&object, &meshMemManager, meshList)) {
+		QUIT("Could not load final mesh." << line);
+	}
+	writeBinary(&pArgs, meshList, meshMemManager.meshCount);
 }

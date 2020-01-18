@@ -53,7 +53,7 @@ depend: .depend
 .depend: $(ALL_SRC) $(SPIKE_SRC) $(wildcard include/*.hpp)
 	@rm -f ./.depend
 	g++ $(CFLAGS) -MM $^ >> ./.depend;
-	@sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+	sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
 
 include .depend
 

@@ -75,6 +75,7 @@ class GameMemory {
 	void* where;
 };
 
+#ifdef DEBUG
 class StupidArena : virtual public IArena {
 	public:
 	StupidArena() = default;
@@ -85,5 +86,6 @@ class StupidArena : virtual public IArena {
 	StupidArena(StupidArena&&) = delete;
 	StupidArena(const StupidArena&) = delete;
 };
+#endif
 
 #endif

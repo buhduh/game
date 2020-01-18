@@ -1,3 +1,5 @@
 tried to do a bunch of failed memory crap here.... feature/dale/basicshading
 fuck all that, need to implement faces i think? feature/dale/basicshadingV2
-segfault when creating mesh binaries, fix it
+
+1. Think I got it all working again..., write the binary file again
+2. Might goof around with memory a bit.

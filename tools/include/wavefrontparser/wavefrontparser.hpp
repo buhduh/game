@@ -37,16 +37,19 @@ struct ParsedArgs {
 struct VertexTracker {
 	meshint_t vIndex;	
 	vertexbuffer_t vBuffer;
+	void reset();
 };
 
 struct FaceTracker {
 	meshint_t fIndex;
 	indexbuffer_t fBuffer;
+	void reset();
 };
 
 struct NormalTracker {
 	meshint_t nIndex;
 	normalbuffer_t nBuffer;
+	void reset();
 };
 
 struct Object {
@@ -54,6 +57,7 @@ struct Object {
 	VertexTracker* vTracker;
 	FaceTracker* fTracker;
 	NormalTracker* nTracker;
+	void reset();
 };
 
 //definitely not thread safe
@@ -73,7 +77,8 @@ bool processVertexLine(std::string, VertexTracker*);
 bool processFaceLine(std::string, FaceTracker*);
 bool processNormalLine(std::string, NormalTracker*);
 void processNoneLine(std::string);
-bool processObjectLine(std::string, Object*, MeshMemoryManager*, Mesh*);
-bool writeObject(ParsedArgs*, Object*);
+bool processObjectLine(std::string, Object*, MeshMemoryManager*, Mesh**);
+bool writeBinary(ParsedArgs*, Mesh**, meshint_t);
+bool loadMeshFromObject(Object*, MeshMemoryManager*, Mesh**);
 
 #endif

@@ -78,13 +78,15 @@ class MeshMemoryManager {
 		normalbuffer_t normals,
 		indexbuffer_t indeces
 	);
+	//accessors are kinda dumb, 
+	//not sure if I should make this public or private...
+	meshint_t meshCount;	
 	private:
 	GameMemory* gameMemory;
 	IArena* vertArena;
 	IArena* normalArena;
 	IArena* indexArena;
 	IArena* meshArena;
-	meshint_t meshCount;	
 };
 
 #endif

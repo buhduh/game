@@ -87,6 +87,12 @@ MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory)
   : gameMemory(gMemory)
   , meshCount(0)
 {	
+	//this absolutely leaks, but i need a memory solution
+	vertArena = new StupidArena();
+	normalArena = new StupidArena();
+	indexArena = new StupidArena();
+	meshArena = new StupidArena();
+#if 0
 	vertArena = gameMemory->newStackArena(
 		sizeof(vertex_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
 	);
@@ -99,6 +105,7 @@ MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory)
 	meshArena = gameMemory->newStackArena(
 		sizeof(Mesh) * MAX_MESH_COUNT
 	);
+#endif
 }
 
 //don't deallocate the arenas if the memory manager didn't make them
