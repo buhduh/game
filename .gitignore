@@ -5,3 +5,5 @@ tags
 build/
 lib/
 assets/
+notgit.txt
+.depend
