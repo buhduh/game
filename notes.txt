@@ -3,3 +3,4 @@ fuck all that, need to implement faces i think? feature/dale/basicshadingV2
 
 1. Think I got it all working again..., write the binary file again
 2. Might goof around with memory a bit.
+3. Don't think LDFLAGS are quite correct in the memory project.
