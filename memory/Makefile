@@ -8,10 +8,12 @@ DIR = $(shell pwd)
 CFLAGS = -std=c++17 -I$(DIR)/include -I$(HOME)/include -DDEBUG
 LDFLAGS = -Llib -lmemory
 
-BUILD_DIRS = build/test bin lib
+BUILD_DIRS = build bin lib
 LIB = lib/libmemory.a
 
 TEST_EXE = bin/test
+
+all: $(BUILD_DIRS) $(LIB)
 
 test: $(BUILD_DIRS) $(TEST_EXE)
 	@$(TEST_EXE)
@@ -34,4 +36,4 @@ $(TEST_OBJ): build/test/%.o: test/%.cpp
 clean:
 	@rm -rf $(BUILD_DIRS)
 
-.PHONY: test clean
+.PHONY: test clean all
