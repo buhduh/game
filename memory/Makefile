@@ -5,10 +5,10 @@ TEST_OBJ = $(patsubst test/%.cpp,build/test/%.o,$(TEST_SRC))
 
 DIR = $(shell pwd)
 
-CFLAGS = -std=c++17 -I$(DIR)/include -I$(HOME)/include -DDEBUG
+CFLAGS = -std=c++17 -I$(DIR)/include -I$(HOME)/include -Itest -DDEBUG 
 LDFLAGS = -Llib -lmemory
 
-BUILD_DIRS = build bin lib
+BUILD_DIRS = build bin lib build/test
 LIB = lib/libmemory.a
 
 TEST_EXE = bin/test
