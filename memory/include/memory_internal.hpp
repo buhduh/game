@@ -4,10 +4,11 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 
-#define kilobytes(SIZE) (1024 * (SIZE))
-#define megabytes(SIZE) (1024 * kilobytes(SIZE))
-#define gigabytes(SIZE) (size_t(1024) * megabytes(SIZE))
+#define KILOBYTES(SIZE) (1024 * (SIZE))
+#define MEGABYTES(SIZE) (1024 * KILOBYTES(SIZE))
+#define GIGABYTES(SIZE) (size_t(1024) * MEGABYTES(SIZE))
 
 #define STD_LOG(MSG) (std::cout << MSG << std::endl)
 
@@ -28,6 +29,7 @@ struct Block {
 //unoccupied memory sectors 
 //can save the metadata directly
 //in their location
+//the ocupied sector otherwise
 union Sector {
 	Block blockDescriptor;
 	void* memory;

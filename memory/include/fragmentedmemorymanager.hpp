@@ -7,10 +7,9 @@ namespace memory {
 	class FragmentedMemoryManager {
 		public:
 		/*
-			Gaurantees that allocated memory will NEVER be larger than size
+			Gaurantees that allocated memory will be less than or equal to size
+			if passed mem isn't on an aligned address will reduce size accordingly
 			for best results align should be a divisor of size and start 
-			otherwise start will be placed on the next greatest alignment address
-			and size will be shifted smaller to fit the given alignment
 		*/
 		FragmentedMemoryManager(
 			size_t size, void* start, size_t align = CACHE_LINE_SZ
