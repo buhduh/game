@@ -1,1 +1,3 @@
 should output the test to the build dir and display on standard out
+
+writing FragmentedMemoryManager::allocate

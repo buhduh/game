@@ -28,15 +28,15 @@ namespace memory {
 		6.  [xxxxxx|xxxxxx|xxxxxxx], right sector freed, new free sector,
 			edge case, freed sector is at end of buffer
 	*/
-		//Since these are ordered, an optimization can be found when looking for
-		//sectors O(n) -> O(log(n))
 		void* allocate(size_t);
 		void deallocate(void*);
 		//only intended to be derived by test classes
 		//but you do you
 		protected:
 		//a linked list
-		Block* head;	
+		Sector* head;
+		private:
+		size_t alignment;
 	};
 };
 #endif

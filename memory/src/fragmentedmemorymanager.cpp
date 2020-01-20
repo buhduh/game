@@ -6,7 +6,7 @@ FragmentedMemoryManager::FragmentedMemoryManager(
 	size_t size, 
 	void* start, 
 	size_t align //= CACHE_LINE_SZ
-)
+) : alignment(align)
 {
 	//align is power of 2
 	const size_t mask = align - 1;
@@ -25,7 +25,39 @@ FragmentedMemoryManager::FragmentedMemoryManager(
 		ptr: nullptr,
 		size: size
 	};
-	head = &sectorStart->blockDescriptor;
+	head = sectorStart;
+}
+
+//Guarenteed to allocate at least size on the align boundary, may allocate more, 
+//but the callee won't know the difference.
+//returns nullptr if it could not allocate
+//block size and ptr are always aligned to align
+//should this 0 the memory?
+/*
+void* FragmentedMemoryManager::allocate(size_t size) {
+	size_t adjustedSize = alignAddress(size, alignment);
+	for(Block* curr = head; curr != nullptr; curr = static_cast<Block*>(curr->ptr)) {
+		if(curr->size < adjustedSize) {
+			continue;
+		}
+		//We found a block
+#if 0
+		//pretty sure this scenario is a bit more tricky, doing it later
+		//this also needs to handle the scenario when the space between blocks isn't
+		//large enough
+		if(curr->size == adjustedSize) {
+			return found block			
+		}
+#endif
+		void* toRet = curr->ptr;
+	}
+	return nullptr;
+}
+*/
+
+//ptr becomes nullptr on success, does nothing if ptr is null
+void FragmentedMemoryManager::deallocate(void* ptr) {
+
 }
 
 };
