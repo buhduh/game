@@ -35,6 +35,15 @@ union Sector {
 	void* memory;
 };
 
+/*
+enum Result {
+	OK,
+	NO_SPACE,
+	MAX_ALLOCATIONS,
+	ERROR
+};
+*/
+
 inline void* toPtr(const uintptr_t ptr) {
 	return reinterpret_cast<void*>(ptr);
 }

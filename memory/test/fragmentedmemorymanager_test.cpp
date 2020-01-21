@@ -3,13 +3,11 @@
 #include "fragmentedmemorymanager.hpp"
 
 class TestFragManager : public memory::FragmentedMemoryManager
+//class TestFragManager : memory::FragmentedMemoryManager
 {
 	public:
-	TestFragManager(
-			size_t size, void* start, 
-			size_t align = memory::CACHE_LINE_SZ
-	) 
-		: memory::FragmentedMemoryManager(size, start, align) 
+	TestFragManager(size_t size, void* start, memory::Sector* const allocations)
+		: memory::FragmentedMemoryManager(size, start, allocations, 1024)
 	{};
 	memory::Sector* getSector() {return head;};
 };
@@ -28,21 +26,23 @@ void printBlock(memory::Block* block) {
 	STD_LOG("block->size: " << block->size);
 };
 
-#if 0
 TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 
 	void* mem = cleanAndReset(nullptr, MEGABYTES(32));
-	void* alignedMem = memory::alignPointer(mem, memory::CACHE_LINE_SZ);
+	//not really too worried about this just yet
+	void* tStore  = cleanAndReset(nullptr, MEGABYTES(1));
+	//no freaking idea which casts I should use, may end up being
+	//a good exercise...
+	memory::Sector* const allocationStore = (memory::Sector* const)tStore;
 
 	SECTION("Allocations and deallocations when everything is aligned.");
-	 	TestFragManager manager(KILOBYTES(1), alignedMem);
-		void* foo = manager.allocate(KILOBYTES(1));
+	 	TestFragManager manager(MEGABYTES(1), mem, allocationStore);
+		void* foo = manager.alignedAllocate(KILOBYTES(1), memory::CACHE_LINE_SZ);
 
 	free(mem);
 };
-#endif
 
-TEST_CASE("FragmentedMemoryManager alignment initialization", "[fragmentedmemorymanager]" ) {
+TEST_CASE("FragmentedMemoryManager initialization", "[fragmentedmemorymanager]" ) {
 
 	void* mem = cleanAndReset(nullptr, MEGABYTES(32));
 	void* alignedMem;
@@ -51,25 +51,25 @@ TEST_CASE("FragmentedMemoryManager alignment initialization", "[fragmentedmemory
 		alignedMem = memory::alignPointer(mem, memory::CACHE_LINE_SZ);
 		assert(alignedMem);
 
-	 	TestFragManager manager(KILOBYTES(1), alignedMem);
+	 	TestFragManager manager(KILOBYTES(1), alignedMem, nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.ptr == nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.size == KILOBYTES(1));
 
-	 	manager = TestFragManager(MEGABYTES(1), alignedMem);
+	 	manager = TestFragManager(MEGABYTES(1), alignedMem, nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.ptr == nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.size == MEGABYTES(1));
 
-		manager = TestFragManager(MEGABYTES(43), alignedMem);
+		manager = TestFragManager(MEGABYTES(43), alignedMem, nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.ptr == nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.size == MEGABYTES(43));
 
 		size_t align = sizeof(memory::Block);
 		alignedMem = memory::alignPointer(mem, align);
 		//the memory boundary aligns to align, and requests align count bytes
-		manager = TestFragManager(align, alignedMem, align);
+		manager = TestFragManager(align, alignedMem, nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.size == align);
 
-		manager = TestFragManager(align/2, alignedMem, align);
+		manager = TestFragManager(align/2, alignedMem, nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.size == 0);
 
 		size_t size = sizeof(memory::Sector)/2;
@@ -77,16 +77,8 @@ TEST_CASE("FragmentedMemoryManager alignment initialization", "[fragmentedmemory
 		alignedMem = memory::alignPointer(mem, align);
 		assert(size > align && size < sizeof(memory::Sector));
 		//the smallest allocation is sizeof(Sector);
-		manager = TestFragManager(size, alignedMem, align);
+		manager = TestFragManager(size, alignedMem, nullptr);
 		REQUIRE(manager.getSector()->blockDescriptor.size == 0);
-
-
-	SECTION("Align is not a divisor of size and/or start.");
-		
-		alignedMem = memory::alignPointer(mem, 32);
-		alignedMem = memory::toPtr(memory::toUPtr(alignedMem) + 2);
-		manager = TestFragManager(KILOBYTES(1), alignedMem, 8);
-		REQUIRE(manager.getSector()->blockDescriptor.size < KILOBYTES(1));
 
 	free(mem);
 };

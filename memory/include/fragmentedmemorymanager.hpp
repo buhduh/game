@@ -7,12 +7,14 @@ namespace memory {
 	class FragmentedMemoryManager {
 		public:
 		/*
-			Gaurantees that allocated memory will be less than or equal to size
-			if passed mem isn't on an aligned address will reduce size accordingly
-			for best results align should be a divisor of size and start 
+			Memory allocations happen directly on passed start
+			and are possible up to size dependant on align when allocating
 		*/
 		FragmentedMemoryManager(
-			size_t size, void* start, size_t align = CACHE_LINE_SZ
+			size_t size, 
+			void* start, 
+			Sector* const allocations, 
+			size_t const maxAllocations
 		);
 	/*
 		possible scenarios
@@ -28,7 +30,7 @@ namespace memory {
 		6.  [xxxxxx|xxxxxx|xxxxxxx], right sector freed, new free sector,
 			edge case, freed sector is at end of buffer
 	*/
-		void* allocate(size_t);
+		void* alignedAllocate(size_t sz, size_t align);
 		void deallocate(void*);
 		//only intended to be derived by test classes
 		//but you do you
@@ -36,7 +38,15 @@ namespace memory {
 		//a linked list
 		Sector* head;
 		private:
-		size_t alignment;
+		//sets Sector to the Sector BEFORE the found location
+		//for easier list updates
+		//DOES NOT allocate, allocate must still be
+		//called
+		//I don't think I need this
+		//Result canAllocate(Sector* loc, size_t size, size_t align);
+		Sector* allocations;
+		size_t maxAllocations;
+		size_t allocationCount;
 	};
 };
 #endif

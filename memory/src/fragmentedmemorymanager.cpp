@@ -5,19 +5,14 @@ namespace memory {
 FragmentedMemoryManager::FragmentedMemoryManager(
 	size_t size, 
 	void* start, 
-	size_t align //= CACHE_LINE_SZ
-) : alignment(align)
+	Sector* const occupiedBlocks,
+	size_t maxAllocations
+)   
+	: allocations(occupiedBlocks)
+	, maxAllocations(maxAllocations)
+	, allocationCount(0)
 {
-	//align is power of 2
-	const size_t mask = align - 1;
-	assert((align & mask) == 0);
-	void* adjustedStart = alignPointer(start, align);
-	//uintptr_t sectorEndUPtr = alignAddress(toUPtr(adjustedStart) + size, align);
-	//The given alignment pushes the sector end beyond the passed size
-	if(adjustedStart != start) {
-		size -= (toUPtr(adjustedStart) - toUPtr(start));
-	}
-	Sector* sectorStart = reinterpret_cast<Sector*>(adjustedStart);
+	Sector* sectorStart = reinterpret_cast<Sector*>(start);
 	if(size < sizeof(Sector)) {
 		size = 0;
 	}
@@ -32,28 +27,34 @@ FragmentedMemoryManager::FragmentedMemoryManager(
 //but the callee won't know the difference.
 //returns nullptr if it could not allocate
 //block size and ptr are always aligned to align
-//should this 0 the memory?
-/*
-void* FragmentedMemoryManager::allocate(size_t size) {
-	size_t adjustedSize = alignAddress(size, alignment);
-	for(Block* curr = head; curr != nullptr; curr = static_cast<Block*>(curr->ptr)) {
-		if(curr->size < adjustedSize) {
+void* FragmentedMemoryManager::alignedAllocate(size_t size, size_t align) {
+	if(allocationCount == maxAllocations) return nullptr;
+	for(
+		Sector* curr = head; 
+		curr != nullptr; 
+		curr = static_cast<Sector*>(curr->blockDescriptor.ptr)
+	) 
+	{
+		if(curr->blockDescriptor.size < size) {
 			continue;
 		}
-		//We found a block
-#if 0
-		//pretty sure this scenario is a bit more tricky, doing it later
-		//this also needs to handle the scenario when the space between blocks isn't
-		//large enough
-		if(curr->size == adjustedSize) {
-			return found block			
+		//found a potential block, make sure it's adequate
+		uintptr_t adjustedAddress = toUPtr(alignPointer(&curr, align));
+		size_t diff = adjustedAddress - toUPtr(&curr);
+		if(curr->blockDescriptor.size - diff >= size) {
+			//TODO, modify the sectors here
+			Block block = Block{
+				ptr: toPtr(adjustedAddress),
+				size: size
+			};
+			Sector sector;
+			sector.blockDescriptor = block;
+			allocations[allocationCount++] = sector;
+			return nullptr;
 		}
-#endif
-		void* toRet = curr->ptr;
 	}
 	return nullptr;
 }
-*/
 
 //ptr becomes nullptr on success, does nothing if ptr is null
 void FragmentedMemoryManager::deallocate(void* ptr) {

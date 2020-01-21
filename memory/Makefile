@@ -6,6 +6,7 @@ TEST_OBJ = $(patsubst test/%.cpp,build/test/%.o,$(TEST_SRC))
 DIR = $(shell pwd)
 
 CFLAGS = -std=c++17 -I$(DIR)/include -I$(HOME)/include -Itest -DDEBUG 
+TEST_CFLAGS = $(CFLAGS) -DTEST
 LDFLAGS = -Llib -lmemory
 
 BUILD_DIRS = build bin lib build/test
@@ -31,7 +32,7 @@ $(OBJ): build/%.o: src/%.cpp
 	g++ -g -Wall $(CFLAGS) -o $@ -c $^
 
 $(TEST_OBJ): build/test/%.o: test/%.cpp
-	g++ -g -Wall $(CFLAGS) -o $@ -c $^
+	g++ -g -Wall $(TEST_CFLAGS) -o $@ -c $^
 
 clean:
 	@rm -rf $(BUILD_DIRS)
