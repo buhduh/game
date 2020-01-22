@@ -30,10 +30,12 @@ struct Block {
 //can save the metadata directly
 //in their location
 //the ocupied sector otherwise
+/*
 union Sector {
 	Block blockDescriptor;
 	void* memory;
 };
+*/
 
 /*
 enum Result {

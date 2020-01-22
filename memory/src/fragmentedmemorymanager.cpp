@@ -2,56 +2,62 @@
 
 namespace memory {
 
+//for best results start should probably be aligned to a
+//cache line
 FragmentedMemoryManager::FragmentedMemoryManager(
 	size_t size, 
 	void* start, 
-	Sector* const occupiedBlocks,
+	Block* const occupiedBlocks,
 	size_t maxAllocations
 )   
 	: allocations(occupiedBlocks)
 	, maxAllocations(maxAllocations)
 	, allocationCount(0)
 {
-	Sector* sectorStart = reinterpret_cast<Sector*>(start);
-	if(size < sizeof(Sector)) {
+	Block* block = reinterpret_cast<Block*>(start);
+	if(size < sizeof(Block)) {
 		size = 0;
 	}
-	sectorStart->blockDescriptor = Block{
-		ptr: nullptr,
-		size: size
-	};
-	head = sectorStart;
+	block->ptr = nullptr;
+	block->size = size;
+	head = block;
 }
 
-//Guarenteed to allocate at least size on the align boundary, may allocate more, 
-//but the callee won't know the difference.
 //returns nullptr if it could not allocate
-//block size and ptr are always aligned to align
-void* FragmentedMemoryManager::alignedAllocate(size_t size, size_t align) {
+void* FragmentedMemoryManager::allocate(size_t size) {
 	if(allocationCount == maxAllocations) return nullptr;
-	for(
-		Sector* curr = head; 
+	Block* prev = head;
+	Block* curr = head;
+	for(;
 		curr != nullptr; 
-		curr = static_cast<Sector*>(curr->blockDescriptor.ptr)
+		prev = curr, curr = static_cast<Block*>(curr->ptr)
 	) 
 	{
-		if(curr->blockDescriptor.size < size) {
+		if(curr->size < size) {
 			continue;
 		}
-		//found a potential block, make sure it's adequate
-		uintptr_t adjustedAddress = toUPtr(alignPointer(&curr, align));
-		size_t diff = adjustedAddress - toUPtr(&curr);
-		if(curr->blockDescriptor.size - diff >= size) {
-			//TODO, modify the sectors here
-			Block block = Block{
-				ptr: toPtr(adjustedAddress),
-				size: size
-			};
-			Sector sector;
-			sector.blockDescriptor = block;
-			allocations[allocationCount++] = sector;
-			return nullptr;
+		Block block = Block{
+			ptr: curr,
+			size: size
+		};
+		allocations[allocationCount++] = block;
+		size_t newSize = curr->size - size;
+		//pretty sure this will wrap if it goes 'negative'
+		assert(newSize < curr->size);
+		//curr was completely allocated
+		if(newSize == 0) {
+			prev->ptr = curr->ptr;
+			return block.ptr;
 		}
+		//at end
+		//TODO this doesn't work for initial allocations
+		if(!curr->ptr) {
+			prev->ptr = nullptr; //curr->ptr
+		} else {
+			prev->ptr = toPtr(toUPtr(curr->ptr) + size);
+			curr->size = newSize;
+		}
+		return block.ptr;
 	}
 	return nullptr;
 }
