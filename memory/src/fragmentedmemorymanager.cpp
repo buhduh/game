@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstring>
+#include <stdint.h>
 
 #include "fragmentedmemorymanager.hpp"
 
@@ -70,16 +71,63 @@ void* FragmentedMemoryManager::allocate(size_t size) {
 }
 
 //ptr becomes nullptr on success, does nothing if ptr is null
+//should I zero it?
 void FragmentedMemoryManager::deallocate(void* ptr) {
 	if(!ptr) return;
 	Block* found = nullptr;
-	for(size_t i = 0; i < allocationCount; i++) {
+	size_t i;
+	for(i = 0; i < allocationCount; i++) {
 		if(allocations[i].address != ptr) {
 			continue;
 		}
 		found = allocations + i;
 		break;
 	}
+	if(!found) return;
+	Block* added = reinterpret_cast<Block*>(ptr);
+	added->size = found->size;
+	//can I merge this if and for together?
+	//need to update head
+	if(ptr < head || !head) {
+		if(head) {
+			Block* temp = head;
+			head = added;
+			added->next = temp->next;
+		} else {
+			head = added;
+			added->next = nullptr;
+		}
+		removeAllocation(i);
+		ptr = nullptr;
+		return;
+	}
+	for(Block* curr = head; curr != nullptr; curr = curr->next) {
+		if(curr < ptr && curr->next > ptr) {
+			Block* temp = curr->next;
+			added->next = temp;
+			curr->next = added;
+			removeAllocation(i);
+			ptr = nullptr;
+			return;
+		}
+	}
+	//this should never be encountered
+	assert(false);
+}
+
+void FragmentedMemoryManager::removeAllocation(size_t index) {
+	assert(allocationCount > 0);
+	allocations[index].size = SIZE_MAX;
+	//not really sure if it's faster to memmove or sort
+	//this thing..., if it's a problem would need
+	//to benchmark I suppose.
+	std::sort(
+		allocations, allocations + allocationCount, 
+		[](Block a, Block b) 
+	{
+		return a.address < b.address;
+	});
+	allocationCount -= 1;
 }
 
 };

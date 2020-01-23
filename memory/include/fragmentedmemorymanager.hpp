@@ -27,6 +27,7 @@ namespace memory {
 		Block* allocations;
 		size_t maxAllocations;
 		size_t allocationCount;
+		void removeAllocation(size_t);
 	};
 };
 #endif

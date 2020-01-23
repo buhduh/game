@@ -34,11 +34,11 @@ TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 	void* tStore  = cleanAndReset(nullptr, MEGABYTES(1));
 	//no freaking idea which casts I should use, may end up being
 	//a good exercise...
-	memory::Block* const allocationStore = (memory::Block* const)tStore;
 
 	SECTION("Initial allocations, everything should be stacking to the left.");
-
-	 	TestFragManager manager(KILOBYTES(5), mem, allocationStore);
+	{
+		memory::Block* const allocationStore = (memory::Block* const)tStore;
+		TestFragManager manager(KILOBYTES(5), mem, allocationStore);
 
 		memory::Block* zeroethHead = manager.getBlock();
 		void* firstAlloc = manager.allocate(KILOBYTES(1));
@@ -58,8 +58,10 @@ TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 
 		shouldBeNull = manager.allocate(1);
 		REQUIRE(shouldBeNull == nullptr);
+	}
 
 	SECTION("Scrambling it to hell with deallocations and allocations");
+	{
 		mem = cleanAndReset(mem, MEGABYTES(32));
 		//not really too worried about this just yet
 		tStore = cleanAndReset(tStore, MEGABYTES(1));
@@ -68,7 +70,34 @@ TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 		//allocationStore = (memory::Block* const)static_cast<memory::Block*>(tStore);
 		//TODO do I care, like at all, to get this working? 
 		//probably "good" c++ practice...
-		memory::Block* const newAllocationStore = (memory::Block* const)tStore;
+		memory::Block* const allocationStore = (memory::Block* const)tStore;
+
+		/*
+		following nomenclature for intended structure:
+		[] -> empty
+		[x|0] -> 1KB allocated on left, 1KB free on right
+		[xx|x|o|xxx] -> 4 allocations, 2KB on left, 3KB on right, etc
+		*/
+		TestFragManager	manager(KILOBYTES(10), mem, allocationStore);
+		//[x|ooooooooo]
+		void* firstAlloc = manager.allocate(KILOBYTES(1));
+		REQUIRE(manager.getBlock() == 
+			memory::toPtr(memory::toUPtr(firstAlloc + KILOBYTES(1)))
+		);
+		//[x|x|oooooooo]
+		void* secondAlloc = manager.allocate(KILOBYTES(1));
+		//[x|x|x|ooooooo]
+		void* thirdAlloc = manager.allocate(KILOBYTES(1));
+		//[x|o|x|ooooooo]
+		manager.deallocate(secondAlloc);
+		REQUIRE(manager.getBlock() == secondAlloc);
+		//[x|o|x|xxx|oooo]
+		void* fourthAlloc = manager.allocate(KILOBYTES(3));
+		STD_LOG(fourthAlloc);
+		REQUIRE(memory::toUPtr(thirdAlloc) + KILOBYTES(1) == memory::toUPtr(fourthAlloc));
+		//[x|o|x|ooooooo]
+		manager.deallocate(fourthAlloc);
+	}
 
 	free(mem);
 	free(tStore);
