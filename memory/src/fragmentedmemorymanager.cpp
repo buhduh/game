@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <cstring>
+
 #include "fragmentedmemorymanager.hpp"
 
 namespace memory {
@@ -18,53 +21,65 @@ FragmentedMemoryManager::FragmentedMemoryManager(
 	if(size < sizeof(Block)) {
 		size = 0;
 	}
-	block->ptr = nullptr;
+	block->next = nullptr;
 	block->size = size;
 	head = block;
 }
 
-//returns nullptr if it could not allocate
 void* FragmentedMemoryManager::allocate(size_t size) {
 	if(allocationCount == maxAllocations) return nullptr;
-	Block* prev = head;
+	Block** prev = &head;
 	Block* curr = head;
 	for(;
-		curr != nullptr; 
-		prev = curr, curr = static_cast<Block*>(curr->ptr)
-	) 
+		curr != nullptr;
+		prev = &curr,
+		curr = curr->next
+	)
 	{
 		if(curr->size < size) {
 			continue;
 		}
-		Block block = Block{
-			ptr: curr,
+		Block allocBlock = Block{
+			address: curr,
 			size: size
 		};
-		allocations[allocationCount++] = block;
+		allocations[allocationCount++] = allocBlock;
 		size_t newSize = curr->size - size;
 		//pretty sure this will wrap if it goes 'negative'
 		assert(newSize < curr->size);
 		//curr was completely allocated
 		if(newSize == 0) {
-			prev->ptr = curr->ptr;
-			return block.ptr;
-		}
-		//at end
-		//TODO this doesn't work for initial allocations
-		if(!curr->ptr) {
-			prev->ptr = nullptr; //curr->ptr
+			*prev = curr->next;
 		} else {
-			prev->ptr = toPtr(toUPtr(curr->ptr) + size);
-			curr->size = newSize;
+			void* newAddress = toPtr(toUPtr(curr) + size);
+			Block* newBlock = reinterpret_cast<Block*>(newAddress);
+			newBlock->next = curr->next;
+			newBlock->size = newSize;
+			*prev = newBlock;
 		}
-		return block.ptr;
+		std::sort(
+			allocations, allocations + allocationCount, 
+			[](Block a, Block b) 
+		{
+			return a.address < b.address;
+		});
+		memset(allocBlock.address, 0, size);
+		return allocBlock.address;
 	}
 	return nullptr;
 }
 
 //ptr becomes nullptr on success, does nothing if ptr is null
 void FragmentedMemoryManager::deallocate(void* ptr) {
-
+	if(!ptr) return;
+	Block* found = nullptr;
+	for(size_t i = 0; i < allocationCount; i++) {
+		if(allocations[i].address != ptr) {
+			continue;
+		}
+		found = allocations + i;
+		break;
+	}
 }
 
 };

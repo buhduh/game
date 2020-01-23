@@ -1,5 +1,6 @@
-#include "catch2/catch.hpp"
+#include <type_traits>
 
+#include "catch2/catch.hpp"
 #include "fragmentedmemorymanager.hpp"
 
 class TestFragManager : public memory::FragmentedMemoryManager
@@ -22,7 +23,7 @@ void* cleanAndReset(void* ptr, size_t size) {
 }
 
 void printBlock(memory::Block* block) {
-	STD_LOG("block->ptr: " << block->ptr);
+	STD_LOG("block->ptr: " << block->address);
 	STD_LOG("block->size: " << block->size);
 };
 
@@ -39,18 +40,38 @@ TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 
 	 	TestFragManager manager(KILOBYTES(5), mem, allocationStore);
 
-		memory::Block* oldHead = manager.getBlock();
+		memory::Block* zeroethHead = manager.getBlock();
 		void* firstAlloc = manager.allocate(KILOBYTES(1));
-		REQUIRE(firstAlloc == (void*) oldHead);
-
+		REQUIRE(firstAlloc == (void*) zeroethHead);
+			
 		memory::Block* firstHead = manager.getBlock();
-		void* secondAlloc = manager.allocate(KILOBYTES(1));
+		void* secondAlloc = manager.allocate(KILOBYTES(3));
 		REQUIRE((void*) firstHead == secondAlloc);
+		REQUIRE(zeroethHead != firstHead);
 
 		void* shouldBeNull = manager.allocate(KILOBYTES(4));
 		REQUIRE(shouldBeNull == nullptr);
 
+		memory::Block* secondHead = manager.getBlock();
+		void* thirdAlloc = manager.allocate(KILOBYTES(1));
+		REQUIRE((void*) secondHead == thirdAlloc);
+
+		shouldBeNull = manager.allocate(1);
+		REQUIRE(shouldBeNull == nullptr);
+
+	SECTION("Scrambling it to hell with deallocations and allocations");
+		mem = cleanAndReset(mem, MEGABYTES(32));
+		//not really too worried about this just yet
+		tStore = cleanAndReset(tStore, MEGABYTES(1));
+		//TODO, this is fucking stupid, const blah blah
+		//std::remove_const<memory::Block*>::type allocationStore;
+		//allocationStore = (memory::Block* const)static_cast<memory::Block*>(tStore);
+		//TODO do I care, like at all, to get this working? 
+		//probably "good" c++ practice...
+		memory::Block* const newAllocationStore = (memory::Block* const)tStore;
+
 	free(mem);
+	free(tStore);
 };
 
 TEST_CASE("FragmentedMemoryManager initialization", "[fragmentedmemorymanager]" ) {
@@ -63,15 +84,15 @@ TEST_CASE("FragmentedMemoryManager initialization", "[fragmentedmemorymanager]" 
 		assert(alignedMem);
 
 	 	TestFragManager manager(KILOBYTES(1), alignedMem, nullptr);
-		REQUIRE(manager.getBlock()->ptr == nullptr);
+		REQUIRE(manager.getBlock()->address == nullptr);
 		REQUIRE(manager.getBlock()->size == KILOBYTES(1));
 
 	 	manager = TestFragManager(MEGABYTES(1), alignedMem, nullptr);
-		REQUIRE(manager.getBlock()->ptr == nullptr);
+		REQUIRE(manager.getBlock()->address == nullptr);
 		REQUIRE(manager.getBlock()->size == MEGABYTES(1));
 
 		manager = TestFragManager(MEGABYTES(43), alignedMem, nullptr);
-		REQUIRE(manager.getBlock()->ptr == nullptr);
+		REQUIRE(manager.getBlock()->address == nullptr);
 		REQUIRE(manager.getBlock()->size == MEGABYTES(43));
 
 		size_t align = sizeof(memory::Block);

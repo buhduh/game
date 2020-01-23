@@ -22,7 +22,10 @@ static const size_t CACHE_LINE_SZ = 64;
 //will likely have multiple meanings based on their implementation
 //careful comments will be useful
 struct Block {
-	void* ptr;
+	union {
+		void* address;
+		Block* next;
+	};
 	size_t size;
 };
 
