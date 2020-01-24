@@ -31,6 +31,7 @@ namespace memory {
 		size_t maxAllocations;
 		size_t allocationCount;
 		void removeAllocation(size_t);
+		void reconnectRegion(void*);
 	};
 };
 #endif

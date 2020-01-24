@@ -106,11 +106,24 @@ TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 		//[x|o|x|ooooooo]
 		manager.deallocate(fourthAlloc);
 		REQUIRE(manager.getBlock()->next == fourthAlloc);
+		REQUIRE(
+			manager.getBlock()->next == 
+			memory::toPtr(memory::toUPtr(manager.getBlock()) + 2*1024)
+		);
 		
+		//TODO here...
+		//[x|o|x|xxxxxxx]
 		void* fifthAlloc = manager.allocate(KILOBYTES(7));
 		REQUIRE(fourthAlloc == fifthAlloc);
 		REQUIRE(manager.getBlock() == secondAlloc);
+		//shouldn't head->next be nullptr?
+		printBlock(manager.getBlock()->next);
 		REQUIRE(manager.getBlock()->next == nullptr);
+
+		//[x|o|x|xxxxxxx]
+		void* sixthAlloc = manager.allocate(KILOBYTES(2));
+		REQUIRE(!sixthAlloc);
+		REQUIRE(!manager.getBlock()->next);
 	}
 
 	free(mem);

@@ -79,6 +79,20 @@ void* FragmentedMemoryManager::allocate(size_t size) {
 	return nullptr;
 }
 
+void FragmentedMemoryManager::reconnectRegion(void* ptr) {
+	Block* curr = head;
+	while(curr) {
+		if(curr == ptr) break;
+		curr = curr->next;
+	}
+	if(!curr) return;
+	if(curr->next == toPtr(toUPtr(curr) + curr->size)) {
+		curr->size += curr->next->size;
+		//can this ever logically be null?
+		curr->next = curr->next->next;
+	}
+}
+
 //does nothing if ptr is null
 //should I zero it?
 void FragmentedMemoryManager::deallocate(void* ptr) {
@@ -106,6 +120,7 @@ void FragmentedMemoryManager::deallocate(void* ptr) {
 			head = added;
 			added->next = nullptr;
 		}
+		reconnectRegion(ptr);
 		removeAllocation(i);
 		return;
 	}
@@ -114,6 +129,7 @@ void FragmentedMemoryManager::deallocate(void* ptr) {
 			Block* temp = curr->next;
 			added->next = temp;
 			curr->next = added;
+			reconnectRegion(ptr);
 			removeAllocation(i);
 			return;
 		}
