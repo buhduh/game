@@ -8,7 +8,6 @@ namespace memory {
 		public:
 		/*
 			Memory allocations happen directly on passed start
-			and are possible up to size dependant on align when allocating
 		*/
 		FragmentedMemoryManager(
 			size_t size, 
@@ -24,6 +23,10 @@ namespace memory {
 		//a linked list
 		Block* head;
 		private:
+		//Not quite sure why I didn't make
+		//the allocations a linked list.
+		//If sorting this every allocation becomes a
+		//bottleneck, perhaps I should
 		Block* allocations;
 		size_t maxAllocations;
 		size_t allocationCount;

@@ -82,21 +82,35 @@ TEST_CASE("FragmentedMemoryManager allocations", "[fragmentedmemorymanager]" ) {
 		//[x|ooooooooo]
 		void* firstAlloc = manager.allocate(KILOBYTES(1));
 		REQUIRE(manager.getBlock() == 
-			memory::toPtr(memory::toUPtr(firstAlloc + KILOBYTES(1)))
+			memory::toPtr(memory::toUPtr(firstAlloc) + KILOBYTES(1))
 		);
 		//[x|x|oooooooo]
 		void* secondAlloc = manager.allocate(KILOBYTES(1));
 		//[x|x|x|ooooooo]
 		void* thirdAlloc = manager.allocate(KILOBYTES(1));
+		REQUIRE(manager.getBlock() == 
+			memory::toPtr(memory::toUPtr(thirdAlloc) + KILOBYTES(1))
+		);
 		//[x|o|x|ooooooo]
 		manager.deallocate(secondAlloc);
 		REQUIRE(manager.getBlock() == secondAlloc);
+		REQUIRE(manager.getBlock()->next == memory::toPtr(memory::toUPtr(secondAlloc) + KILOBYTES(2)));
 		//[x|o|x|xxx|oooo]
 		void* fourthAlloc = manager.allocate(KILOBYTES(3));
-		STD_LOG(fourthAlloc);
 		REQUIRE(memory::toUPtr(thirdAlloc) + KILOBYTES(1) == memory::toUPtr(fourthAlloc));
+		REQUIRE(manager.getBlock() == secondAlloc);
+		REQUIRE(
+			manager.getBlock()->next == 
+			memory::toPtr(memory::toUPtr(manager.getBlock()) + KILOBYTES(5))
+		);
 		//[x|o|x|ooooooo]
 		manager.deallocate(fourthAlloc);
+		REQUIRE(manager.getBlock()->next == fourthAlloc);
+		
+		void* fifthAlloc = manager.allocate(KILOBYTES(7));
+		REQUIRE(fourthAlloc == fifthAlloc);
+		REQUIRE(manager.getBlock() == secondAlloc);
+		REQUIRE(manager.getBlock()->next == nullptr);
 	}
 
 	free(mem);

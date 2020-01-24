@@ -27,13 +27,14 @@ FragmentedMemoryManager::FragmentedMemoryManager(
 	head = block;
 }
 
+//This thing is hideous...
 void* FragmentedMemoryManager::allocate(size_t size) {
 	if(allocationCount == maxAllocations) return nullptr;
-	Block** prev = &head;
+	Block* prev = nullptr;
 	Block* curr = head;
 	for(;
 		curr != nullptr;
-		prev = &curr,
+		prev = curr,
 		curr = curr->next
 	)
 	{
@@ -50,13 +51,21 @@ void* FragmentedMemoryManager::allocate(size_t size) {
 		assert(newSize < curr->size);
 		//curr was completely allocated
 		if(newSize == 0) {
-			*prev = curr->next;
+			if(prev) {
+				prev = curr->next;
+			} else {
+				head = head->next;
+			}
 		} else {
 			void* newAddress = toPtr(toUPtr(curr) + size);
 			Block* newBlock = reinterpret_cast<Block*>(newAddress);
 			newBlock->next = curr->next;
 			newBlock->size = newSize;
-			*prev = newBlock;
+			if(curr == head) {
+				head = newBlock;
+			} else {
+				prev->next = newBlock;
+			}
 		}
 		std::sort(
 			allocations, allocations + allocationCount, 
@@ -70,7 +79,7 @@ void* FragmentedMemoryManager::allocate(size_t size) {
 	return nullptr;
 }
 
-//ptr becomes nullptr on success, does nothing if ptr is null
+//does nothing if ptr is null
 //should I zero it?
 void FragmentedMemoryManager::deallocate(void* ptr) {
 	if(!ptr) return;
@@ -92,13 +101,12 @@ void FragmentedMemoryManager::deallocate(void* ptr) {
 		if(head) {
 			Block* temp = head;
 			head = added;
-			added->next = temp->next;
+			added->next = temp;
 		} else {
 			head = added;
 			added->next = nullptr;
 		}
 		removeAllocation(i);
-		ptr = nullptr;
 		return;
 	}
 	for(Block* curr = head; curr != nullptr; curr = curr->next) {
@@ -107,7 +115,6 @@ void FragmentedMemoryManager::deallocate(void* ptr) {
 			added->next = temp;
 			curr->next = added;
 			removeAllocation(i);
-			ptr = nullptr;
 			return;
 		}
 	}
