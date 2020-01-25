@@ -52,7 +52,7 @@ void* FragmentedMemoryManager::allocate(size_t size) {
 		//curr was completely allocated
 		if(newSize == 0) {
 			if(prev) {
-				prev = curr->next;
+				prev->next = curr->next;
 			} else {
 				head = head->next;
 			}
