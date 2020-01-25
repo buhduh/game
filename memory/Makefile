@@ -16,6 +16,15 @@ TEST_EXE = bin/test
 
 all: $(BUILD_DIRS) $(LIB)
 
+#TODO FUCK YOU!!!!!!!
+#depend: .depend 
+	#@echo > /dev/null
+
+.depend: $(SRC) $(TEST_SRC) $(wildcard include/*.hpp)
+	@rm -f ./.depend
+	g++ $(CFLAGS) -MM $^ >> ./.depend;
+	sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+
 test: $(BUILD_DIRS) $(TEST_EXE)
 	@$(TEST_EXE)
 
@@ -37,4 +46,4 @@ $(TEST_OBJ): build/test/%.o: test/%.cpp
 clean:
 	@rm -rf $(BUILD_DIRS)
 
-.PHONY: test clean all
+.PHONY: test clean all depend
