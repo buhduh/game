@@ -21,6 +21,9 @@ static const size_t CACHE_LINE_SZ = 64;
 
 static const size_t MAX_MEMORY_ARENAS = 1024;
 
+//stdfixedarena allocates this*sizeof(T) at first
+static const size_t DEF_ARENA_COUNT = 1024;
+
 //will likely have multiple meanings based on their implementation
 //careful comments will be useful
 struct Block {

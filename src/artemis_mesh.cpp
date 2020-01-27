@@ -67,11 +67,11 @@ Mesh* MeshMemoryManager::newMesh(
 	normalbuffer_t normalBuffer = 
 		(normalbuffer_t) normalArena->allocate(sizeof(normal_t) * numNormals);
 	indexbuffer_t indexBuffer = 
-		(indexbuffer_t) indexArena->allocate(sizeof(vertex_t) * numIndeces);
+		(indexbuffer_t) indexArena->allocate(sizeof(index_t) * numIndeces);
 	//is verts nil on failure?
 	memcpy(vertBuffer, verts, sizeof(vertex_t) * numVerts);
 	memcpy(normalBuffer, normals, sizeof(normal_t) * numNormals);
-	memcpy(indexBuffer, indeces, sizeof(index_t) * numVerts);
+	memcpy(indexBuffer, indeces, sizeof(index_t) * numIndeces);
 	Mesh* mesh = (Mesh*) meshArena->allocate(sizeof(Mesh));
 	assert(mesh);
 	*mesh = Mesh(
@@ -121,45 +121,39 @@ bool Mesh::isNil() {
 	return numVerts == 0;
 }
 
-/*
-size_t getSizeOfVertexBuffer(Mesh* mesh, meshcount_t numMeshes) {
-	vertexindex_t totVerts = 0;
-	for(meshcount_t i = 0; i < numMeshes; i++) {
-		totVerts += mesh[i].numVerts;	
-	}
-	return sizeof(vertex_t) * totVerts;
-}
-*/
-
-std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
-	out << "mesh printer not implemented";
-	return out;
-}
-/*
 std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
 	out << "vertex count: " << mesh.numVerts << std::endl;
+	out << "normal count: " << mesh.numNormals << std::endl;
 	out << "index count: " << mesh.numIndeces << std::endl;
 	out << "vertex buffer ptr: " << mesh.vertices << std::endl;
+	out << "normal buffer ptr: " << mesh.normals << std::endl;
 	out << "index buffer ptr: " << mesh.indeces << std::endl;
 	if(mesh.numVerts == 0) {
 		out << "vertex list: nil" << std::endl;
 	} else {
 		out << "vertex list:" << std::endl;
-		for(vertexindex_t i = 0; i < mesh.numVerts; i++) {
+		for(meshint_t i = 0; i < mesh.numVerts; i++) {
 			out << "\tx: " << mesh.vertices[i].x << " y: " << mesh.vertices[i].y
-			<< " z: " << mesh.vertices[i].y << std::endl;
+			<< " z: " << mesh.vertices[i].z << std::endl;
 		}
 	}
-	//these should have multiples of 3...
+	if(mesh.numNormals == 0) {
+		out << "normal list: nil" << std::endl;
+	} else {
+		out << "normal list:" << std::endl;
+		for(meshint_t i = 0; i < mesh.numNormals; i++) {
+			out << "\tx: " << mesh.normals[i].x << " y: " << mesh.normals[i].y
+			<< " z: " << mesh.normals[i].z << std::endl;
+		}
+	}
 	if(mesh.numIndeces == 0) {
 		out << "index list: nil" << std::endl;
 	} else {
 		out << "index list:" << std::endl;
-		for(vertexindex_t i = 0; i < mesh.numIndeces;) {
-			out << "\t" << mesh.indeces[i++] << ", " << mesh.indeces[i++]
-			<< ", " << mesh.indeces[i++] << std::endl;
+		for(meshint_t i = 0; i < mesh.numIndeces; i++) {
+			out << "\tv index: " << mesh.indeces[i].x << " n/a: " << mesh.indeces[i].y
+			<< " n index: " << mesh.indeces[i].z << std::endl;
 		}
 	}
 	return out;
 }
-*/

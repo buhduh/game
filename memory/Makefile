@@ -2,6 +2,7 @@ SRC = $(wildcard src/*.cpp)
 OBJ = $(patsubst src/%.cpp,build/%.o,$(SRC))
 TEST_SRC = $(wildcard test/*.cpp)
 TEST_OBJ = $(patsubst test/%.cpp,build/test/%.o,$(TEST_SRC))
+HEADERS = $(wildcard include/*.hpp)
 
 DIR = $(shell pwd)
 
@@ -16,13 +17,11 @@ TEST_EXE = bin/test
 
 all: $(BUILD_DIRS) $(LIB)
 
-#TODO FUCK YOU!!!!!!!
-#depend: .depend 
-	#@echo > /dev/null
+depend: .depend 
+	@echo > /dev/null
 
-.depend: $(SRC) $(TEST_SRC) $(wildcard include/*.hpp)
-	@rm -f ./.depend
-	g++ $(CFLAGS) -MM $^ >> ./.depend;
+.depend: $(SRC) $(TEST_SRC) $(HEADERS)
+	g++ $(CFLAGS) -MM $^ > ./.depend;
 	sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
 
 test: $(BUILD_DIRS) $(TEST_EXE)

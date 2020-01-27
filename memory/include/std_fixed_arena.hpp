@@ -2,6 +2,7 @@
 #define STD_FIXED_ARENA_HPP
 
 #include "memory_internal.hpp"
+#include "fragmented_memory_manager.hpp"
 
 /*
 	Currently only intended for std::vectors, 
@@ -14,28 +15,37 @@ template<typename T>
 class STDFixedArena {
 	public:
 
-	STDFixedArena() {
-		foo = 3;
-	}
-
 	typedef T value_type;
 	typedef size_t size_type;
 
-	T* allocate(size_type size) {
-		return (T*) malloc(1024 * sizeof(T));	
+	//size is num elems
+	STDFixedArena(FragmentedMemoryManager* strategy, size_type size) 
+		: strategy(strategy)
+		, maxSize(size)
+	{
+		mem = strategy->allocate(size * sizeof(T));
 	}
 
+	~STDFixedArena() {
+		strategy->deallocate(mem);
+	}
+
+	T* allocate(size_type size) {
+		return reinterpret_cast<T*>(mem);
+	}
+
+	//TODO, don't think I need to do anything here...
 	void deallocate(T* t,  size_type size) {
-		free(t);
 	}
 
 	size_type max_size() {
-		return 1024;
+		return maxSize;
 	}
 
 	private:
-	//TODO just a test var
-	int foo;
+	FragmentedMemoryManager* strategy;
+	void* mem;
+	size_type maxSize;
 };
 
 };

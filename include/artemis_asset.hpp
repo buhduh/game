@@ -12,7 +12,7 @@ typedef std::unordered_map<std::string, Mesh> meshassets_t;
 static meshassets_t MeshAssets = meshassets_t(MAX_CONCURRENT_MESHES);
 
 struct MeshFileHeader {
-	meshcount_t numMeshes;
+	uint32_t numMeshes;
 };
 
 struct MeshHeader {

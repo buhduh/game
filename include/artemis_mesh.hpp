@@ -20,7 +20,7 @@ const static uint8_t MAX_MESH_NAME = UINT8_MAX;
 	respective buffers.
 */
 typedef uint16_t meshint_t;
-const static meshint_t MAX_MESH_BUFFER_SZ = UINT16_MAX;
+const static meshint_t MESHINT_MAX UINT16_MAX;
 /*
 	The maximum number of meshes a MeshMemoryManager
 	will manage.
