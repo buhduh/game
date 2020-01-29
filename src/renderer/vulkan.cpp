@@ -329,18 +329,18 @@ void Vulkan::createIndexBuffer() {
 		stagingBuffer, stagingBufferMemory
 	);
 
+	//TODO the gpu requires vertex indeces to be 16bit wide?
 	//indeces are now a uvec3, the x component is the
 	//vert index
 	auto vertIndexCount = getIndexCountFromMeshes(numMeshes, meshes);
 	vertindex_t vertIndeces[vertIndexCount];
-	assert(sizeof(vertindex_t) == sizeof(meshes->indeces[0].x));
+	//assert(sizeof(vertindex_t) == sizeof(meshes->indeces[0].x));
 	for(uint32_t i = 0; i < vertIndexCount; i++) {
-		vertIndeces[i] = meshes->indeces[i].x;
+		vertIndeces[i] = static_cast<vertindex_t>(meshes->indeces[i].x);
 	}
 
     void* data;
     vkMapMemory(device, stagingBufferMemory, 0, vertIndexBufferSize, 0, &data);
-    //std::memcpy(data, meshes->indeces, bufferSize);
     std::memcpy(data, vertIndeces, vertIndexBufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
     createBuffer(

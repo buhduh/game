@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 		fTracker: &fTracker,
 		nTracker: &nTracker,
 	};
-	GameMemory gMem = GameMemory(gigabytes(1));
+	GameMemory gMem = GameMemory(GIGABYTES(1));
 	MeshMemoryManager meshMemManager = MeshMemoryManager(&gMem);
 	Mesh* meshList[MAX_MESH_COUNT];
 	for(;std::getline(inFile, line);) {

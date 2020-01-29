@@ -30,7 +30,8 @@ const static meshint_t MAX_MESH_COUNT = UINT16_MAX;
 //TODO starting to look like I'm going to need a more sophisticated
 //index system
 typedef glm::uvec3 index_t;
-typedef uint32_t vertindex_t;
+//typedef uint32_t vertindex_t;
+typedef uint16_t vertindex_t;
 
 typedef glm::vec3 vertex_t;
 typedef glm::vec3 normal_t;

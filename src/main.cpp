@@ -214,7 +214,7 @@ int main(void) {
 
 	//most this crap shouldn't be on the stack
 	platform::Window* window = platform::createWindow();
-	//platform::initializeInput(window);
+	platform::initializeInput(window);
 	MeshMemoryManager mManager(mainMemory);
 	Mesh* mesh = loadMeshFromFile(&mManager, std::string("cube"));
 	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, mesh);
@@ -228,10 +228,10 @@ int main(void) {
 		glm::vec3(0.0f, 0.0f, 1.0f)
 	);
 
-	//input::initializeInputSystem(arena, window);
-	//input::Context* context = input::requestNewContext();
-	//input::enableContext(context);
-	//initializeInput(context, camera);
+	input::initializeInputSystem(arena, window);
+	input::Context* context = input::requestNewContext();
+	input::enableContext(context);
+	initializeInput(context, camera);
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
@@ -244,7 +244,7 @@ int main(void) {
 			).count();
 		lastTime = currentTime;
 		platform::pollEvents();
-		//updateCamera(camera, time);
+		updateCamera(camera, time);
 		auto ubo = constructUBO(stackArena, camera);	
 		vulkan.drawFrame(ubo);	
 	}
