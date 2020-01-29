@@ -31,11 +31,23 @@ class STDFixedArena {
 	}
 
 	T* allocate(size_type size) {
+		STD_LOG("std_fixed_arena allocating");
+		if(size <= maxSize) {
+			//pretty sure i should never see this
+			assert(false);
+		}
+		size_type oldSize = maxSize;
+		while(size < maxSize) maxSize *= 2;
+		void* tMem = strategy->allocate(maxSize * sizeof(T));
+		assert(tMem);
+		deallocate(mem, oldSize);
+		mem = tMem;
 		return reinterpret_cast<T*>(mem);
 	}
 
 	//TODO, don't think I need to do anything here...
 	void deallocate(T* t,  size_type size) {
+		strategy->deallocate(t);
 	}
 
 	size_type max_size() {
