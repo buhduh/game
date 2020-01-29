@@ -312,26 +312,43 @@ void Vulkan::createVertexBuffer() {
 }
 
 //meshes must be contiguous in memory!!!
+//TODO oh yeah, im fucking this up now!!!
+//going to create a vert index buffer directly on the
+//stack for now
 void Vulkan::createIndexBuffer() {
 	if(numMeshes == 0) return;
-	VkDeviceSize bufferSize = getRequiredIndexBufferSizeFromMeshes(numMeshes, meshes);
+
+	//does this want bytes?
+	VkDeviceSize vertIndexBufferSize = getRequiredIndexBufferSizeFromMeshes(numMeshes, meshes);
+
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
     createBuffer(
-		bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+		vertIndexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
 		stagingBuffer, stagingBufferMemory
 	);
+
+	//indeces are now a uvec3, the x component is the
+	//vert index
+	auto vertIndexCount = getIndexCountFromMeshes(numMeshes, meshes);
+	vertindex_t vertIndeces[vertIndexCount];
+	assert(sizeof(vertindex_t) == sizeof(meshes->indeces[0].x));
+	for(uint32_t i = 0; i < vertIndexCount; i++) {
+		vertIndeces[i] = meshes->indeces[i].x;
+	}
+
     void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    std::memcpy(data, meshes->indeces, bufferSize);
+    vkMapMemory(device, stagingBufferMemory, 0, vertIndexBufferSize, 0, &data);
+    //std::memcpy(data, meshes->indeces, bufferSize);
+    std::memcpy(data, vertIndeces, vertIndexBufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
     createBuffer(
-		bufferSize, 
+		vertIndexBufferSize, 
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, 
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory
 	);
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+    copyBuffer(stagingBuffer, indexBuffer, vertIndexBufferSize);
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }

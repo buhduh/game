@@ -23,10 +23,11 @@ TEST_SRC = $(shell find test -name "*.cpp")
 TEST_OBJ = $(patsubst test/%.cpp, build/test_%.o, $(TEST_SRC))
 TEST_BIN = bin/main_test_package
 
-ASSETS_DIR = assets
+MESH_ASSETS_DIR = assets/meshes
+SHADERS_DIR = assets/shaders
 
 WAVEFRONT_SRC = $(wildcard models/wavefront/*.obj)
-WAVEFRONT_ASSETS = $(patsubst models/wavefront/%.obj, assets/meshes/%.bin, $(WAVEFRONT_SRC))
+WAVEFRONT_ASSETS = $(patsubst models/wavefront/%.obj, %, $(WAVEFRONT_SRC))
 WAVEFRONT_TOOL = tools/bin/wavefrontparser
 WAVEFRONT_BLD = build/wavefrontparser
 
@@ -40,7 +41,7 @@ SPIKE_BIN = $(patsubst spike/%.cpp, bin/spike_%, $(SPIKE_SRC))
 EXE = bin/game
 LIBS = lib/libArtemis.a
 
-BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV) $(WAVEFRONT_ASSETS) $(ASSETS_DIR) $(LIBS)) bin)
+BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(LIBS)) bin $(MESH_ASSETS_DIR) $(SHADERS_DIR))
 
 all: depend $(BUILD_DIRS) $(EXE) $(LIBS) $(WAVEFRONT_ASSETS) shaders
 
@@ -85,7 +86,7 @@ bin/spike_%: spike/%.cpp
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-$(WAVEFRONT_ASSETS): assets/meshes/%.bin: models/wavefront/%.obj $(WAVEFRONT_TOOL)
+$(WAVEFRONT_ASSETS): %: models/wavefront/%.obj $(WAVEFRONT_TOOL)
 	$(WAVEFRONT_TOOL) $(filter-out $(WAVEFRONT_TOOL), $^) $@
 	@touch $(WAVEFRONT_BLD)
 
@@ -97,7 +98,7 @@ $(WAVEFRONT_TOOL): $(WAVEFRONT_BLD)
 $(WAVEFRONT_BLD):
 
 clean:
-	@rm -rf $(filter-out ./, $(BUILD_DIRS))
+	rm -rf $(filter-out ./, $(BUILD_DIRS))
 	@rm -f .depend
 	@$(MAKE) -C tools clean
 

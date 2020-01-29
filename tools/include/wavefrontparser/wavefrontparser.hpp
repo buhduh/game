@@ -9,11 +9,6 @@
 
 #include "artemis_mesh.hpp"
 
-#define STD_ERR(MSG) std::cerr << MSG << std::endl
-#define QUIT(MSG) \
-	STD_ERR(MSG); \
-	exit(EXIT_FAILURE)
-
 enum TYPE {
 	VERTEX,
 	FACE,
@@ -31,7 +26,7 @@ const static std::unordered_map<std::string, TYPE> TYPE_MAP {
 
 struct ParsedArgs {
 	std::string inFile;
-	std::string outFile;
+	std::string meshName;
 };
 
 struct VertexTracker {

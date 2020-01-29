@@ -14,7 +14,6 @@
 #define INDEX_BUFFER_SIZE megabytes(32)
 #endif
 
-const static uint8_t MAX_MESH_NAME = UINT8_MAX;
 /*
 	The maximum number of elements a mesh can have for its 
 	respective buffers.
@@ -28,7 +27,11 @@ const static meshint_t MESHINT_MAX UINT16_MAX;
 const static meshint_t MAX_MESH_COUNT = UINT16_MAX;
 
 //x is verts, y is textures, z is normals
+//TODO starting to look like I'm going to need a more sophisticated
+//index system
 typedef glm::uvec3 index_t;
+typedef uint32_t vertindex_t;
+
 typedef glm::vec3 vertex_t;
 typedef glm::vec3 normal_t;
 //these buffer_t's are being cast to and from void*

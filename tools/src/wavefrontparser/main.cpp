@@ -17,9 +17,9 @@ int main(int argc, char* argv[]) {
 	}
 	std::ifstream inFile(pArgs.inFile, std::ifstream::in|std::ifstream::binary);
 	std::string line;
-	vertex_t vertBuffer[MAX_MESH_BUFFER_SZ] = {vertex_t(0)};
-	index_t indexBuffer[MAX_MESH_BUFFER_SZ] = {index_t(0)};
-	normal_t normalBuffer[MAX_MESH_BUFFER_SZ] = {normal_t(0)};
+	vertex_t vertBuffer[MESHINT_MAX] = {vertex_t(0)};
+	index_t indexBuffer[MESHINT_MAX] = {index_t(0)};
+	normal_t normalBuffer[MESHINT_MAX] = {normal_t(0)};
 	VertexTracker vTracker = VertexTracker{
 		vIndex: 0,
 		vBuffer: vertBuffer,

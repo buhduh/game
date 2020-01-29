@@ -15,13 +15,14 @@ namespace renderer {
 		}
 		return tot;
 	}
+	//this is only for verts
 	size_t getRequiredIndexBufferSizeFromMeshes(
 		const meshcount_t numMeshes, const Mesh* meshes
 	) {
 		size_t tot = 0;
-		size_t indexSize = sizeof(index_t);
+		size_t vertIndexSize = sizeof(vertindex_t);
 		for(meshcount_t i = 0; i < numMeshes; ++i) {
-			tot += (meshes[i].numIndeces * indexSize);
+			tot += (meshes[i].numIndeces * vertIndexSize);
 		}
 		return tot;
 	}
