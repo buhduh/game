@@ -1,0 +1,3 @@
+should output the test to the build dir and display on standard out
+
+make sure memory.hpp only includes "public" interfaces

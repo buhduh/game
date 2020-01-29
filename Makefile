@@ -1,7 +1,8 @@
 #TODO Really need to sort these flags out
 
-CFLAGS = -std=c++17 -I$(VULKAN_SDK)/include -Iinclude -I$(HOME)/include -DDEBUG
-LDFLAGS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
+DIR = $(shell pwd)
+export CFLAGS := -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -DDEBUG
+export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 
@@ -22,10 +23,11 @@ TEST_SRC = $(shell find test -name "*.cpp")
 TEST_OBJ = $(patsubst test/%.cpp, build/test_%.o, $(TEST_SRC))
 TEST_BIN = bin/main_test_package
 
-ASSETS_DIR = assets
+MESH_ASSETS_DIR = assets/meshes
+SHADERS_DIR = assets/shaders
 
 WAVEFRONT_SRC = $(wildcard models/wavefront/*.obj)
-WAVEFRONT_ASSETS = $(patsubst models/wavefront/%.obj, assets/meshes/%.bin, $(WAVEFRONT_SRC))
+WAVEFRONT_ASSETS = $(patsubst models/wavefront/%.obj, %, $(WAVEFRONT_SRC))
 WAVEFRONT_TOOL = tools/bin/wavefrontparser
 WAVEFRONT_BLD = build/wavefrontparser
 
@@ -36,11 +38,25 @@ SHADER_SPV = $(patsubst shaders/%, assets/shaders/%.spv, $(SHADER_SRC))
 SPIKE_SRC = $(wildcard spike/*.cpp)
 SPIKE_BIN = $(patsubst spike/%.cpp, bin/spike_%, $(SPIKE_SRC))
 
-BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(SHADER_SPV) $(WAVEFRONT_ASSETS) $(ASSETS_DIR)) bin)
-
 EXE = bin/game
+LIBS = lib/libArtemis.a
 
-all: $(BUILD_DIRS) $(EXE) $(WAVEFRONT_ASSETS) shaders
+BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(LIBS)) bin $(MESH_ASSETS_DIR) $(SHADERS_DIR))
+
+all: depend $(BUILD_DIRS) $(EXE) $(LIBS) $(WAVEFRONT_ASSETS) shaders
+
+$(LIBS): $(OBJ)
+	ar crf $@ $^
+
+depend: .depend 
+	@echo > /dev/null
+
+.depend: $(ALL_SRC) $(SPIKE_SRC) $(wildcard include/*.hpp)
+	@rm -f ./.depend
+	g++ $(CFLAGS) -MM $^ >> ./.depend;
+	sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+
+include .depend
 
 test: $(BUILD_DIRS) $(TEST_BIN)
 	$(TEST_BIN)
@@ -60,7 +76,7 @@ $(EXE): $(ALL_OBJ)
 	g++ -g $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(ALL_OBJ): build/%.o: src/%.cpp
-	g++ -g $(CFLAGS) -o $@ -c $^ $(LDFLAGS)
+	g++ -g $(CFLAGS) -o $@ -c $< $(LDFLAGS)
 
 spike: $(BUILD_DIRS) $(OBJ) $(SPIKE_BIN)
 
@@ -70,7 +86,7 @@ bin/spike_%: spike/%.cpp
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-$(WAVEFRONT_ASSETS): assets/meshes/%.bin: models/wavefront/%.obj $(WAVEFRONT_TOOL)
+$(WAVEFRONT_ASSETS): %: models/wavefront/%.obj $(WAVEFRONT_TOOL)
 	$(WAVEFRONT_TOOL) $(filter-out $(WAVEFRONT_TOOL), $^) $@
 	@touch $(WAVEFRONT_BLD)
 
@@ -83,9 +99,10 @@ $(WAVEFRONT_BLD):
 
 clean:
 	rm -rf $(filter-out ./, $(BUILD_DIRS))
+	@rm -f .depend
 	@$(MAKE) -C tools clean
 
 clean_spike:
 	@rm -f bin/spike_*
 
-.PHONY: all wavefront shaders spike
+.PHONY: all wavefront shaders spike depend

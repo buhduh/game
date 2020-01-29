@@ -208,17 +208,18 @@ void initializeInput(input::Context* context, Camera* camera) {
 }
 
 int main(void) {
-	GameMemory* mainMemory = new GameMemory(gigabytes(1));
+	GameMemory* mainMemory = new GameMemory(GIGABYTES(1));
 	StackArena* stackArena = 
-		mainMemory->newStackArena(kilobytes(1));
+		mainMemory->newStackArena(KILOBYTES(1));
 
 	//most this crap shouldn't be on the stack
 	platform::Window* window = platform::createWindow();
 	platform::initializeInput(window);
+	MeshMemoryManager mManager(mainMemory);
+	Mesh* mesh = loadMeshFromFile(&mManager, std::string("cube"));
+	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, mesh);
+
 	IArena* arena = new StupidArena();
-	MeshOrganizer mOrganizer(arena);
-	Mesh mesh1 = getMeshAsset("Cube", &mOrganizer);
-	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, &mesh1);
 
 	Camera* camera = Camera::newCamera(
 		arena, 

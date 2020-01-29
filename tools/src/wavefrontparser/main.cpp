@@ -1,5 +1,6 @@
 #include <string>
 
+#include "artemis_game.hpp"
 #include "wavefrontparser.hpp"
 
 #define EXPECTED_ARGS 3
@@ -15,25 +16,32 @@ int main(int argc, char* argv[]) {
 		QUIT("Unable to find and/or open inFile: " << pArgs.inFile);
 	}
 	std::ifstream inFile(pArgs.inFile, std::ifstream::in|std::ifstream::binary);
-	int lineN = 1;
 	std::string line;
-	glm::vec3 vertBuffer[MAX_VERTS] = {glm::vec3(0)};
-	//not sure if this needs to be bigger
-	vertexindex_t indexBuffer[MAX_VERTS] = {0};
+	vertex_t vertBuffer[MESHINT_MAX] = {vertex_t(0)};
+	index_t indexBuffer[MESHINT_MAX] = {index_t(0)};
+	normal_t normalBuffer[MESHINT_MAX] = {normal_t(0)};
 	VertexTracker vTracker = VertexTracker{
 		vIndex: 0,
 		vBuffer: vertBuffer,
 	};
 	FaceTracker fTracker = FaceTracker{
 		fIndex: 0,
-		fBuffer: indexBuffer
+		fBuffer: indexBuffer,
+	};
+	NormalTracker nTracker = NormalTracker{
+		nIndex: 0,
+		nBuffer: normalBuffer,
 	};
 	Object object = Object{
 		name: std::string(""),
 		vTracker: &vTracker,
 		fTracker: &fTracker,
+		nTracker: &nTracker,
 	};
-	for(; std::getline(inFile, line); lineN++) {
+	GameMemory gMem = GameMemory(GIGABYTES(1));
+	MeshMemoryManager meshMemManager = MeshMemoryManager(&gMem);
+	Mesh* meshList[MAX_MESH_COUNT];
+	for(;std::getline(inFile, line);) {
 		if(line.empty()) continue;
 		TYPE type = getTypeFromString(line);
 		switch(type) {
@@ -53,8 +61,15 @@ int main(int argc, char* argv[]) {
 			}
 			case OBJECT:
 			{
-				if(!processObjectLine(line, &object)) {
+				if(!processObjectLine(line, &object, &meshMemManager, meshList)) {
 					QUIT("Failed parsing object line:\n\t" << line);
+				}
+				break;
+			}
+			case NORMAL:
+			{
+				if(!processNormalLine(line, &nTracker)) {
+					QUIT("Failed parsing normal line:\n\t" << line);
 				}
 				break;
 			}
@@ -65,5 +80,8 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
-	writeObject(&pArgs, &object);
+	if(!loadMeshFromObject(&object, &meshMemManager, meshList)) {
+		QUIT("Could not load final mesh." << line);
+	}
+	writeBinary(&pArgs, meshList, meshMemManager.meshCount);
 }

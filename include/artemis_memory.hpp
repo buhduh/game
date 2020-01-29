@@ -16,14 +16,15 @@ class IArena {
 
 class StackArena : virtual public IArena {
 	public:
-	StackArena(size_t, void*);
-	~StackArena() = default;
+	StackArena(size_t, void*, class GameMemory*);
+	virtual ~StackArena();
 	void* allocate(size_t) override;
 	void deallocate(void*) override;
 	void reset();
 	private:
 	StackArena(StackArena&&) = delete;
 	StackArena(const StackArena&) = delete;
+	GameMemory* gameMemory;
 	void* sp;
 	const void* end;
 	const void* start;
@@ -39,7 +40,9 @@ class ConstantPoolArena : virtual public IArena {
 	ConstantPoolArena(size_t, size_t, size_t, void*);
 	void* allocate(size_t) override;
 	void deallocate(void*) override;
+	//virtual ~ConstantPoolArena() = delete;
 	private:
+	GameMemory* gameMemory;
 	size_t numPools;
 	size_t elemsPerPool;
 	size_t poolSize;
@@ -58,6 +61,7 @@ class GameMemory {
 		size_t elemsPerPool, 
 		size_t elemSize
 	);
+	void deallocateArena(IArena*);
 	private:
 	GameMemory(GameMemory&&) = delete;
 	GameMemory(const GameMemory&) = delete;
@@ -71,6 +75,7 @@ class GameMemory {
 	void* where;
 };
 
+#ifdef DEBUG
 class StupidArena : virtual public IArena {
 	public:
 	StupidArena() = default;
@@ -81,5 +86,6 @@ class StupidArena : virtual public IArena {
 	StupidArena(StupidArena&&) = delete;
 	StupidArena(const StupidArena&) = delete;
 };
+#endif
 
 #endif
