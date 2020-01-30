@@ -23,7 +23,8 @@ class STDFixedArena {
 		: strategy(strategy)
 		, maxSize(size)
 	{
-		mem = strategy->allocate(size * sizeof(T));
+		void* tMem = strategy->allocate(size * sizeof(T));
+		mem = reinterpret_cast<T*>(tMem);
 	}
 
 	~STDFixedArena() {
@@ -32,17 +33,21 @@ class STDFixedArena {
 
 	T* allocate(size_type size) {
 		STD_LOG("std_fixed_arena allocating");
-		if(size <= maxSize) {
+		STD_LOG("size: " << size);
+		STD_LOG("maxSize: " << maxSize);
+		//if(size <= maxSize) {
+			//STD_LOG("size: " << size);
+			//STD_LOG("maxSize: " << maxSize);
 			//pretty sure i should never see this
-			assert(false);
-		}
+			//assert(false);
+		//}
 		size_type oldSize = maxSize;
-		while(size < maxSize) maxSize *= 2;
+		while(size > maxSize) maxSize *= 2;
 		void* tMem = strategy->allocate(maxSize * sizeof(T));
 		assert(tMem);
 		deallocate(mem, oldSize);
-		mem = tMem;
-		return reinterpret_cast<T*>(mem);
+		mem = reinterpret_cast<T*>(tMem);
+		return mem;
 	}
 
 	//TODO, don't think I need to do anything here...
@@ -56,7 +61,7 @@ class STDFixedArena {
 
 	private:
 	FragmentedMemoryManager* strategy;
-	void* mem;
+	T* mem;
 	size_type maxSize;
 };
 

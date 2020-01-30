@@ -1,48 +1,55 @@
-SRC = $(wildcard src/*.cpp)
-OBJ = $(patsubst src/%.cpp,build/%.o,$(SRC))
-TEST_SRC = $(wildcard test/*.cpp)
-TEST_OBJ = $(patsubst test/%.cpp,build/test/%.o,$(TEST_SRC))
-HEADERS = $(wildcard include/*.hpp)
-
-DIR = $(shell pwd)
-
-CFLAGS = -std=c++17 -I$(DIR)/include -I$(HOME)/include -Itest -DDEBUG 
+CFLAGS = -std=c++17 -Iinclude -I$(HOME)/include -Itest -DDEBUG 
 TEST_CFLAGS = $(CFLAGS) -DTEST
 LDFLAGS = -Llib -lmemory
 
-BUILD_DIRS = build bin lib build/test
-LIB = lib/libmemory.a
+TEST_MAIN = test/test.cpp
+TEST_SRC = $(filter-out $(TEST_MAIN), $(wildcard test/*.cpp))
+SRC = $(wildcard src/*.cpp)
+ALL_SRC = $(TEST_MAIN) $(TEST_SRC) $(SRC)
+
+LIB_OBJ = $(patsubst src/%.cpp, build/%.o, $(SRC))
+TEST_OBJ = $(patsubst test/%.cpp, build/%.o, $(TEST_MAIN) $(TEST_SRC))
+OBJ = $(LIB_OBJ) $(TEST_OBJ)
+
+SRC = $(wildcard src/*.cpp)
+
+BUILD_DIRS = build bin
 
 TEST_EXE = bin/test
 
-all: $(BUILD_DIRS) $(LIB)
+LIB = lib/libmemory.a
+
+all: .depend $(BUILD_DIRS) $(OBJ) $(LIB)
 
 depend: .depend 
 	@echo > /dev/null
 
-.depend: $(SRC) $(TEST_SRC) $(HEADERS)
-	g++ $(CFLAGS) -MM $^ > ./.depend;
-	sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+.depend: $(SRC) $(TEST_SRC)
+	@g++ $(CFLAGS) -MM $^ > ./.depend;
+	@sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
 
-test: $(BUILD_DIRS) $(TEST_EXE)
-	@$(TEST_EXE)
+include .depend
 
-$(TEST_EXE): $(TEST_OBJ) $(LIB)
-	g++ -g -Wall $(CFLAGS) -o bin/test $^
+#TODO here
+$(LIB): 
 
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-$(LIB): $(OBJ)
-	ar crf $@ $^
+test: $(TEST_EXE)
+	@$<
 
-$(OBJ): build/%.o: src/%.cpp
-	g++ -g -Wall $(CFLAGS) -o $@ -c $^
+$(TEST_EXE): $(TEST_SRC) $(TEST_MAIN)
+	g++ -g -Wall $(CFLAGS) -o bin/test $^
 
-$(TEST_OBJ): build/test/%.o: test/%.cpp
-	g++ -g -Wall $(TEST_CFLAGS) -o $@ -c $^
+#I should be able to merge the OBJ targets, no?
+$(LIB_OBJ): build/%.o: src/%.cpp
+	g++ -g -Wall $(CFLAGS) -o $@ -c $<
+
+$(TEST_OBJ): build/%.o: test/%.cpp
+	g++ -g -Wall $(CFLAGS) -o $@ -c $<
 
 clean:
 	@rm -rf $(BUILD_DIRS)
 
-.PHONY: test clean all depend
+.PHONY: depend test clean

@@ -10,5 +10,6 @@ TEST_CASE("Spike for now") {
 		auto vec = std::vector<int, memory::STDFixedArena<int>>(arena);
 		STD_LOG("max_size: " << vec.max_size());
 		STD_LOG("capacity: " << vec.capacity());
-		//REQUIRE(vec.size() == 0);
+		STD_LOG("size: " << vec.size());
+		vec.push_back(4);
 }

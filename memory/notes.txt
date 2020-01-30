@@ -1,3 +1,4 @@
 should output the test to the build dir and display on standard out
 
 Fully implementing testing now, start with stdfixedarena_test.cpp
+on the $(LIB) target in the Makefile
