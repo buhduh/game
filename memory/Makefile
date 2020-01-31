@@ -13,7 +13,7 @@ OBJ = $(LIB_OBJ) $(TEST_OBJ)
 
 SRC = $(wildcard src/*.cpp)
 
-BUILD_DIRS = build bin
+BUILD_DIRS = build bin lib
 
 TEST_EXE = bin/test
 
@@ -30,16 +30,16 @@ depend: .depend
 
 include .depend
 
-#TODO here
-$(LIB): 
+$(LIB): $(LIB_OBJ)
+	ar crf $@ $^
 
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-test: $(TEST_EXE)
-	@$<
+test: $(BUILD_DIRS) $(TEST_EXE)
+	@$(TEST_EXE)
 
-$(TEST_EXE): $(TEST_SRC) $(TEST_MAIN)
+$(TEST_EXE): $(TEST_OBJ) $(LIB)
 	g++ -g -Wall $(CFLAGS) -o bin/test $^
 
 #I should be able to merge the OBJ targets, no?
@@ -50,6 +50,6 @@ $(TEST_OBJ): build/%.o: test/%.cpp
 	g++ -g -Wall $(CFLAGS) -o $@ -c $<
 
 clean:
-	@rm -rf $(BUILD_DIRS)
+	@rm -rf $(BUILD_DIRS) .depend
 
 .PHONY: depend test clean
