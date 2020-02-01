@@ -7,3 +7,8 @@ lib/
 assets/
 notgit.txt
 .depend
+game.config
+game.creator
+game.files
+game.includes
+game.creator.user

@@ -3,6 +3,8 @@
 #include "catch2/catch.hpp"
 #include "fragmented_memory_manager.hpp"
 
+#if 0
+
 class TestFragManager : public memory::FragmentedMemoryManager
 //class TestFragManager : memory::FragmentedMemoryManager
 {
@@ -175,3 +177,4 @@ TEST_CASE("FragmentedMemoryManager initialization", "[fragmentedmemorymanager]" 
 
 	free(mem);
 };
+#endif

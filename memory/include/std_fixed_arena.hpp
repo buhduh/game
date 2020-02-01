@@ -20,43 +20,37 @@ class STDFixedArena {
 
 	//size is num elems
 	STDFixedArena(FragmentedMemoryManager* strategy, size_type size) 
-		: strategy(strategy)
-		, maxSize(size)
 	{
-		void* tMem = strategy->allocate(size * sizeof(T));
-		mem = reinterpret_cast<T*>(tMem);
+		maxSize = size;
+		strategy = strategy;
+		mem = (T*) strategy->allocate(size * sizeof(T));
+		assert(mem);
 	}
 
 	~STDFixedArena() {
+		STD_LOG("STDFixedArena destructor");
+		if(strategy) STD_LOG("strategy exists");
+		else STD_LOG("strategy does not exist");
 		strategy->deallocate(mem);
 	}
 
 	T* allocate(size_type size) {
-		STD_LOG("std_fixed_arena allocating");
-		STD_LOG("size: " << size);
-		STD_LOG("maxSize: " << maxSize);
-		//if(size <= maxSize) {
-			//STD_LOG("size: " << size);
-			//STD_LOG("maxSize: " << maxSize);
-			//pretty sure i should never see this
-			//assert(false);
-		//}
-		size_type oldSize = maxSize;
-		while(size > maxSize) maxSize *= 2;
-		void* tMem = strategy->allocate(maxSize * sizeof(T));
-		assert(tMem);
-		deallocate(mem, oldSize);
-		mem = reinterpret_cast<T*>(tMem);
+		if(size <= maxSize) {
+			return mem;
+		}
+		strategy->deallocate(mem);
+		mem = (T*) strategy->allocate(size * sizeof(T));
+		assert(mem);
+		maxSize = size;
 		return mem;
 	}
 
-	//TODO, don't think I need to do anything here...
-	void deallocate(T* t,  size_type size) {
-		strategy->deallocate(t);
-	}
+	//This particular arena only exists or it does not
+	//all memory is created up front
+	void deallocate(T* t,  size_type size) {}
 
 	size_type max_size() {
-		return maxSize;
+		return  maxSize;
 	}
 
 	private:

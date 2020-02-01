@@ -40,14 +40,14 @@ test: $(BUILD_DIRS) $(TEST_EXE)
 	@$(TEST_EXE)
 
 $(TEST_EXE): $(TEST_OBJ) $(LIB)
-	g++ -g -Wall $(CFLAGS) -o bin/test $^
+	g++ -g -Wall $(TEST_CFLAGS) -o bin/test $^
 
 #I should be able to merge the OBJ targets, no?
 $(LIB_OBJ): build/%.o: src/%.cpp
 	g++ -g -Wall $(CFLAGS) -o $@ -c $<
 
 $(TEST_OBJ): build/%.o: test/%.cpp
-	g++ -g -Wall $(CFLAGS) -o $@ -c $<
+	g++ -g -Wall $(TEST_CFLAGS) -o $@ -c $<
 
 clean:
 	@rm -rf $(BUILD_DIRS) .depend

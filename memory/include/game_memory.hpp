@@ -16,6 +16,7 @@ namespace memory {
 		//TODO these should be pointers
 		template<typename T>
 		STDFixedArena<T> newSTDFixedArena(size_t size) {
+			//return new STDFixedArena<T>(strategy, size);
 			return STDFixedArena<T>(strategy, size);
 		};
 		private:
