@@ -18,6 +18,11 @@ namespace renderer {
 		alignas(16) glm::mat4 proj;
 	};
 
+	struct GPUVertexAttribute {
+		alignas(16) vertex_t vertex;
+		alignas(16) normal_t normal;	
+	};
+
 };
 
 //only vulkan for now
