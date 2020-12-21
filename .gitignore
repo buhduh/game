@@ -1,3 +1,4 @@
+.viminit
 *.bak
 *.sw[a-z]
 bin/

@@ -2,7 +2,8 @@
 
 DIR = $(shell pwd)
 export CFLAGS := -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -DDEBUG
-export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
+export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs -lpthread
+#export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 
