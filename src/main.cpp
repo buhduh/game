@@ -215,9 +215,9 @@ int main(void) {
 	//most this crap shouldn't be on the stack
 	platform::Window* window = platform::createWindow();
 	platform::initializeInput(window);
-	MeshMemoryManager mManager(mainMemory);
-	Mesh* mesh = loadMeshFromFile(&mManager, std::string("cube"));
-	renderer::Vulkan vulkan = renderer::Vulkan(window, 1, mesh);
+	//MeshMemoryManager mManager(mainMemory);
+	//Mesh* mesh = loadMeshFromFile(&mManager, std::string("sphere"));
+	renderer::Vulkan vulkan = renderer::Vulkan(window);
 
 	IArena* arena = new StupidArena();
 
@@ -228,10 +228,13 @@ int main(void) {
 		glm::vec3(0.0f, 0.0f, 1.0f)
 	);
 
+	/*
+	//stbi_load() is breaking this, and i have no idea why...
 	input::initializeInputSystem(arena, window);
 	input::Context* context = input::requestNewContext();
 	input::enableContext(context);
 	initializeInput(context, camera);
+	*/
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 

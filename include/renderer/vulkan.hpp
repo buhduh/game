@@ -12,7 +12,7 @@ namespace renderer {
 
 class Vulkan  {
 	public:
-	Vulkan(platform::Window*, meshcount_t, Mesh*);
+	Vulkan(platform::Window*);
 	~Vulkan();
 	void drawFrame(UniformBufferObject* ubo);
 	void waitIdle();
@@ -21,8 +21,8 @@ class Vulkan  {
 	const static size_t MAX_FRAMES_IN_FLIGHT;
 
 	//members
-	bool frameBufferResized;
 	std::vector<const char*> extensions;
+	bool frameBufferResized;
 	std::vector<const char*> validationLayers;
 	VkInstance instance;
 	platform::Window* window;
@@ -54,10 +54,10 @@ class Vulkan  {
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	size_t currentFrame;
-	meshcount_t numMeshes;
-	//vert lists and index lists MUST be contigous in memory
-	//see createVertexBuffer or createIndexBuffer why
-	Mesh* meshes;
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+	VkImageView textureImageView;
+	VkSampler textureSampler;
 
 	VkDebugUtilsMessengerEXT debugger;
 
@@ -110,6 +110,31 @@ class Vulkan  {
 	void createDescriptorPool();
 	void createDescriptorSets();
 	void recreateSwapChain();
+	//TODO, this is hardcoded, need a better way of handling textures
+	void createTextureImage();
+	void createImage(
+		uint32_t, 
+		uint32_t, 
+		VkFormat, 
+		VkImageTiling, 
+		VkImageUsageFlags, 
+		VkMemoryPropertyFlags, 
+		VkImage&, 
+		VkDeviceMemory&
+	);
+	void copyBufferToImage(VkBuffer, VkImage, uint32_t, uint32_t);
+	void transitionImageLayout(
+		VkImage, 
+		VkFormat, 
+		VkImageLayout, 
+		VkImageLayout
+	);
+	VkCommandBuffer beginSingleTimeCommands();
+	void endSingleTimeCommands(VkCommandBuffer);
+	void createTextureImageView();
+	VkImageView createImageView(VkImage, VkFormat);
+	void createTextureSampler();
+
 };
 
 struct SwapChainSupportDetails {

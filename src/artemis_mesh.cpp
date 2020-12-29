@@ -1,159 +1,61 @@
-#include <cstring>
+#include <sstream>
 
 #include "artemis_mesh.hpp"
 
-Mesh::Mesh(
-	meshint_t numVerts, 
-	meshint_t numNormals, 
-	meshint_t numIndeces, 
-	vertexbuffer_t verts, 
-	normalbuffer_t normals,
-	indexbuffer_t indeces
-) 
-	: numVerts(numVerts)
-	, numNormals(numNormals)
-	, numIndeces(numIndeces)
-	, vertices(verts)
-	, normals(normals)
-	, indeces(indeces)
+Mesh::Mesh()
+	: m_vertexBuffer{vertex_buffer_t{0}}
+	, m_faceBuffer{index_buffer_t{0}} 
 {}
 
-Mesh::Mesh() 
-	: numVerts(0)
-	, numNormals(0)
-	, numIndeces(0)
-	, vertices(nullptr)
-	, normals(nullptr)
-	, indeces(nullptr) 
-{}
+Mesh::Mesh(const vertex_buffer_t& vertBuffer, const index_buffer_t& indexBuffer) {
+	//copy constructors, this is the ecs "magic"
+	m_vertexBuffer = vertBuffer;
+	m_faceBuffer = indexBuffer;
+}
 
-
-//derefences the lists and returns ALL memory consumed
-//not sure if i even need this...
 /*
-size_t Mesh::getSizeOf() {
-	size_t numVertsSize = sizeof(numVerts);
-	size_t vertSize = sizeof(vertex_t) * numVerts;
-	size_t numIndecesSize = sizeof(numIndeces);
-	size_t indexSize = sizeof(vertexindex_t) * numIndeces;
-	return numVertsSize + vertSize + numIndecesSize + indexSize;
+TODO
+void Mesh::setTexture(const texture_t& texture) {
+	m_texels = texture;
+}
+
+const char *getTexels() {
+	return m_texels.data();
 }
 */
 
-MeshMemoryManager::MeshMemoryManager(
-	IArena* vertArena,
-	IArena* normalArena,
-	IArena* indexArena,
-	IArena* meshArena
-) : vertArena(vertArena)
-  , normalArena(normalArena)
-  , indexArena(indexArena)
-  , meshArena(meshArena)
-  , gameMemory(nullptr)
-  , meshCount(0)
-{}
-
-Mesh* MeshMemoryManager::newMesh(
-	meshint_t numVerts, 
-	meshint_t numNormals,
-	meshint_t numIndeces, 
-	vertexbuffer_t verts, 
-	normalbuffer_t normals,
-	indexbuffer_t indeces
+Vertex::Vertex(
+		vertex_pos_t p_pos, 
+		vertex_color_t p_color, 
+		vertex_normal_t p_normal, 
+		vertex_tex_coord_t p_textureCoord
 )
-{
-	vertexbuffer_t vertBuffer = 
-		(vertexbuffer_t) vertArena->allocate(sizeof(vertex_t) * numVerts);
-	normalbuffer_t normalBuffer = 
-		(normalbuffer_t) normalArena->allocate(sizeof(normal_t) * numNormals);
-	indexbuffer_t indexBuffer = 
-		(indexbuffer_t) indexArena->allocate(sizeof(index_t) * numIndeces);
-	//is verts nil on failure?
-	memcpy(vertBuffer, verts, sizeof(vertex_t) * numVerts);
-	memcpy(normalBuffer, normals, sizeof(normal_t) * numNormals);
-	memcpy(indexBuffer, indeces, sizeof(index_t) * numIndeces);
-	Mesh* mesh = (Mesh*) meshArena->allocate(sizeof(Mesh));
-	assert(mesh);
-	*mesh = Mesh(
-		numVerts, numNormals, numIndeces, 
-		vertBuffer, normalBuffer, indexBuffer
-	);
-	meshCount++;
-	return mesh;
-}
+: pos{p_pos}
+, color{p_color}
+, normal{p_normal}
+, textureCoord{p_textureCoord} {}
 
-//TODO will need to probably use better arenas
-MeshMemoryManager::MeshMemoryManager(GameMemory* gMemory) 
-  : gameMemory(gMemory)
-  , meshCount(0)
-{	
-	//this absolutely leaks, but i need a memory solution
-	vertArena = new StupidArena();
-	normalArena = new StupidArena();
-	indexArena = new StupidArena();
-	meshArena = new StupidArena();
-#if 0
-	vertArena = gameMemory->newStackArena(
-		sizeof(vertex_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
-	);
-	normalArena = gameMemory->newStackArena(
-		sizeof(normal_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
-	);
-	indexArena = gameMemory->newStackArena(
-		sizeof(index_t) * MAX_MESH_BUFFER_SZ * MAX_MESH_COUNT
-	);
-	meshArena = gameMemory->newStackArena(
-		sizeof(Mesh) * MAX_MESH_COUNT
-	);
-#endif
-}
-
-//don't deallocate the arenas if the memory manager didn't make them
-MeshMemoryManager::~MeshMemoryManager() {
-	if(!gameMemory) return;
-	gameMemory->deallocateArena(vertArena);
-	gameMemory->deallocateArena(normalArena);
-	gameMemory->deallocateArena(indexArena);
-	gameMemory->deallocateArena(meshArena);
-}
-
-bool Mesh::isNil() {
-	return numVerts == 0;
+std::ostream& operator<<(std::ostream& out, const Vertex& vert) {
+	std::stringstream po;
+	po << "(" << vert.pos.x << "," << vert.pos.y << "," << vert.pos.z << ")";
+	std::stringstream co;
+	co << "(" << vert.color.x << "," << vert.color.y << "," << vert.color.z << ")";
+	std::stringstream no;
+	no << "(" << vert.normal.x << "," << vert.normal.y << "," << vert.normal.z << ")";
+	std::stringstream to;
+	to << "(" << vert.textureCoord.x << "," << vert.textureCoord.y << ")";
+	out << "(" << po.str() << ", " << co.str() << ", " << no.str() << ", " << to.str() << ")";
+	return out;
 }
 
 std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
-	out << "vertex count: " << mesh.numVerts << std::endl;
-	out << "normal count: " << mesh.numNormals << std::endl;
-	out << "index count: " << mesh.numIndeces << std::endl;
-	out << "vertex buffer ptr: " << mesh.vertices << std::endl;
-	out << "normal buffer ptr: " << mesh.normals << std::endl;
-	out << "index buffer ptr: " << mesh.indeces << std::endl;
-	if(mesh.numVerts == 0) {
-		out << "vertex list: nil" << std::endl;
-	} else {
-		out << "vertex list:" << std::endl;
-		for(meshint_t i = 0; i < mesh.numVerts; i++) {
-			out << "\tx: " << mesh.vertices[i].x << " y: " << mesh.vertices[i].y
-			<< " z: " << mesh.vertices[i].z << std::endl;
-		}
+	out << "vertex buffer size: " << mesh.m_vertexBuffer.size() << std::endl;
+	out << "face buffer size: " << mesh.m_faceBuffer.size() << std::endl;
+	for(auto v = mesh.m_vertexBuffer.begin(); v < mesh.m_vertexBuffer.end(); v++) {
+		out << "(" << v->pos.x << ", " << v->pos.y << ", " << v->pos.z << ")" << std::endl;
 	}
-	if(mesh.numNormals == 0) {
-		out << "normal list: nil" << std::endl;
-	} else {
-		out << "normal list:" << std::endl;
-		for(meshint_t i = 0; i < mesh.numNormals; i++) {
-			out << "\tx: " << mesh.normals[i].x << " y: " << mesh.normals[i].y
-			<< " z: " << mesh.normals[i].z << std::endl;
-		}
-	}
-	if(mesh.numIndeces == 0) {
-		out << "index list: nil" << std::endl;
-	} else {
-		out << "index list:" << std::endl;
-		for(meshint_t i = 0; i < mesh.numIndeces; i++) {
-			out << "\tv index: " << mesh.indeces[i].x << " n/a: " << mesh.indeces[i].y
-			<< " n index: " << mesh.indeces[i].z << std::endl;
-		}
+	for(auto f = mesh.m_faceBuffer.begin(); f < mesh.m_faceBuffer.end();) {
+		out << "(" << *(f++) << ", " << *(f++) << ", " << *(f++) << ")" << std::endl;
 	}
 	return out;
 }

@@ -1,3 +1,4 @@
+/*
 #include <vector>
 #include <string.h>
 
@@ -133,3 +134,4 @@ Mesh* loadMeshFromFile(MeshMemoryManager* mManager, std::string meshName) {
 	assert(toRet);
 	return toRet;
 }
+*/

@@ -1,96 +1,56 @@
 #ifndef ARTEMIS_MESH_HPP
 #define ARTEMIS_MESH_HPP
 
-#include <iostream>
+#include <vector>
+#include <ostream>
 #include <glm/glm.hpp>
 
-#include "artemis_game.hpp"
-#include "artemis_memory.hpp"
+typedef glm::vec3 vertex_pos_t;
+typedef glm::vec3 vertex_color_t;
+typedef glm::vec3 vertex_normal_t;
+typedef glm::vec2 vertex_tex_coord_t;
+typedef uint16_t  vertex_index_t;
 
-#if 0
-#define MAX_MESH_BUFFER_SZ UINT16_MAX
-#define MAX_MESH_NAME UINT8_MAX
-#define VERTEX_BUFFER_SIZE megabytes(32)
-#define INDEX_BUFFER_SIZE megabytes(32)
-#endif
-
-/*
-	The maximum number of elements a mesh can have for its 
-	respective buffers.
-*/
-typedef uint16_t meshint_t;
-const static meshint_t MESHINT_MAX UINT16_MAX;
-/*
-	The maximum number of meshes a MeshMemoryManager
-	will manage.
-*/
-const static meshint_t MAX_MESH_COUNT = UINT16_MAX;
-
-//x is verts, y is textures, z is normals
-//TODO starting to look like I'm going to need a more sophisticated
-//index system
-typedef glm::uvec3 index_t;
-//typedef uint32_t vertindex_t;
-typedef uint16_t vertindex_t;
-
-typedef glm::vec3 vertex_t;
-typedef glm::vec3 normal_t;
-//these buffer_t's are being cast to and from void*
-//be careful if their types change
-typedef vertex_t* vertexbuffer_t;
-typedef index_t* indexbuffer_t;
-typedef normal_t* normalbuffer_t;
-
-//for now the buffers are pointers into the MeshOrganizer
-class Mesh {
-	public:
-	Mesh(
-		meshint_t numVerts, 
-		meshint_t numNormals,
-		meshint_t numIndeces, 
-		vertexbuffer_t verts, 
-		normalbuffer_t normals,
-		indexbuffer_t indeces
-	);
-	Mesh();
-	size_t getSizeOf();
-	meshint_t numVerts;
-	meshint_t numNormals;
-	meshint_t numIndeces;
-	vertexbuffer_t vertices;
-	normalbuffer_t normals;
-	indexbuffer_t indeces;  
-	bool isNil();
-	friend std::ostream& operator<<(std::ostream&, const Mesh&);
+//Probably need to deal with alignments...
+struct Vertex{
+	vertex_pos_t       pos;
+	vertex_color_t     color;
+	vertex_normal_t    normal;
+	vertex_tex_coord_t textureCoord;
+	Vertex(vertex_pos_t, vertex_color_t, vertex_normal_t, vertex_tex_coord_t);
+	Vertex() = default;
+	friend std::ostream& operator<<(std::ostream&, const Vertex&);
+	inline bool operator==(const Vertex& rhs) const {
+		return pos          == rhs.pos    && 
+			   color        == rhs.color  && 
+			   normal       == rhs.normal && 
+			   textureCoord == rhs.textureCoord;
+	};
+	inline bool operator!=(const Vertex& rhs) const {
+		return !(*this == rhs);
+	};
 };
 
-class MeshMemoryManager {
+typedef std::vector<Vertex> vertex_buffer_t;
+typedef std::vector<vertex_index_t> index_buffer_t;
+
+class Mesh{
 	public:
-	MeshMemoryManager(
-		IArena* vertArena,
-		IArena* normalArena,
-		IArena* indexArena,
-		IArena* meshArena
-	);
-	MeshMemoryManager(GameMemory*);
-	~MeshMemoryManager();
-	Mesh* newMesh(
-		meshint_t numVerts, 
-		meshint_t numNormals,
-		meshint_t numIndeces, 
-		vertexbuffer_t verts, 
-		normalbuffer_t normals,
-		indexbuffer_t indeces
-	);
-	//accessors are kinda dumb, 
-	//not sure if I should make this public or private...
-	meshint_t meshCount;	
+	Mesh();
+	explicit Mesh(const vertex_buffer_t&, const index_buffer_t&);
+	//Will probably enable these once i get the ecs working with the "real" memory system
+	Mesh(const Mesh&) = delete;
+	Mesh(Mesh&&) = delete;
+	//TODO gonna need to figure this one out
+	//void setTexture(const texture_t&);
+	//const char *getTexels();
+	friend std::ostream& operator<<(std::ostream&, const Mesh&);
+
 	private:
-	GameMemory* gameMemory;
-	IArena* vertArena;
-	IArena* normalArena;
-	IArena* indexArena;
-	IArena* meshArena;
+	vertex_buffer_t m_vertexBuffer;
+	index_buffer_t  m_faceBuffer;
+	//TODO gonna need to figure this one out
+	//texture_t m_texels;
 };
 
 #endif

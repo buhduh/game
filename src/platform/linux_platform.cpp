@@ -38,8 +38,9 @@ namespace platform {
 		glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 		glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-		return glfwCreateWindow(1024, 768, "game", 0, 0);
-		/*
+		//return glfwCreateWindow(1024, 768, "game", 0, 0);
+		//NOTE: comment the rest of this function and uncomment
+		//the above line to change the window to the params above
 		Window* window = glfwCreateWindow(
 			mode->width, mode->height, 
 			"game", monitor, 0
@@ -50,14 +51,12 @@ namespace platform {
 			mode->refreshRate
 		);
 		return window;
-		*/
 	}
 
 	void keyCallback(
 		Window* window, int key, 
 		int scancode, int action, int mods
 	) {
-		//STD_LOG("scancode: " << scancode);
 		input::internalInputCallback(scancode, action);
 	}
 

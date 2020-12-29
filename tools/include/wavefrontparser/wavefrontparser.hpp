@@ -7,21 +7,28 @@
 #include <fstream>
 #include <regex>
 
+#include "artemis_game.hpp"
 #include "artemis_mesh.hpp"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp"
 
 enum TYPE {
 	VERTEX,
 	FACE,
 	OBJECT,
 	NORMAL,
-	NONE
+	NONE,
+	TEXTURE
 };
 
 const static std::unordered_map<std::string, TYPE> TYPE_MAP {
 	{"v ", VERTEX},
 	{"f ", FACE},
 	{"o ", OBJECT},
-	{"vn", NORMAL}
+	{"vn", NORMAL},
+	{"vt", TEXTURE},
+
 };
 
 struct ParsedArgs {
@@ -29,51 +36,47 @@ struct ParsedArgs {
 	std::string meshName;
 };
 
-struct VertexTracker {
-	meshint_t vIndex;	
-	vertexbuffer_t vBuffer;
-	void reset();
-};
-
-struct FaceTracker {
-	meshint_t fIndex;
-	indexbuffer_t fBuffer;
-	void reset();
-};
-
-struct NormalTracker {
-	meshint_t nIndex;
-	normalbuffer_t nBuffer;
-	void reset();
-};
-
-struct Object {
-	std::string name;
-	VertexTracker* vTracker;
-	FaceTracker* fTracker;
-	NormalTracker* nTracker;
-	void reset();
-};
-
 //definitely not thread safe
 static std::cmatch match;
 const static std::regex VERT_PATT(
 	R"(v (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)$)");
+//TODO, texture is the second one...
 const static std::regex FACE_PATT(
-	R"(f (\d+)/\d*/(\d+) (\d+)/\d*/(\d+) (\d+)/\d*/(\d+)$)");
+	R"(f (\d+)/(\d*)/(\d+) (\d+)/(\d*)/(\d+) (\d+)/(\d*)/(\d+)$)");
 const static std::regex NORMAL_PATT(
 	R"(vn (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)$)");
+const static std::regex TEXTURE_PATT(
+	R"(vt ((?:0|1)\.\d+) ((?:0|1)\.\d+)$)");
 
 ParsedArgs parseArgs(int, char**);
 bool checkInFile(std::string);
 void errorAndBail(std::string);
 TYPE getTypeFromString(std::string);
-bool processVertexLine(std::string, VertexTracker*);
-bool processFaceLine(std::string, FaceTracker*);
-bool processNormalLine(std::string, NormalTracker*);
+bool processVertexLine(std::string, std::vector<vertex_pos_t>&);
+bool processFaceLine(std::string, std::vector<glm::uvec3>&);
+bool processNormalLine(std::string, std::vector<vertex_normal_t>&);
+bool processTextureLine(std::string, std::vector<vertex_tex_coord_t>&);
 void processNoneLine(std::string);
-bool processObjectLine(std::string, Object*, MeshMemoryManager*, Mesh**);
-bool writeBinary(ParsedArgs*, Mesh**, meshint_t);
-bool loadMeshFromObject(Object*, MeshMemoryManager*, Mesh**);
+bool processObjectLine(std::string, Mesh*);
+bool writeBinary(ParsedArgs*, Mesh*);
+//std::unique_ptr<Mesh>&: in, the rest out
+bool makeMesh(
+	const std::vector<vertex_pos_t>&, 
+	const std::vector<glm::uvec3>&, 
+	const std::vector<vertex_normal_t>&, 
+	const std::vector<vertex_tex_coord_t>&, 
+	std::unique_ptr<Mesh>&
+);
 
+//for unordered_map<Vertex>
+template<>
+struct std::hash<Vertex> {
+	std::size_t operator()(const Vertex& vert) const {
+		auto posHash = std::hash<vertex_pos_t>()(vert.pos);
+		auto colorHash = std::hash<vertex_color_t>()(vert.color);
+		auto normalHash = std::hash<vertex_normal_t>()(vert.normal);
+		auto textHash = std::hash<vertex_tex_coord_t>()(vert.textureCoord);
+		return posHash ^ colorHash ^ normalHash ^ textHash;
+	}
+};
 #endif

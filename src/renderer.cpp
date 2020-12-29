@@ -5,6 +5,7 @@ namespace renderer {
 		return platform::loadFileIntoBuffer(buffer, bufferSize, fileName);
 	}
 
+	/*
 	size_t getRequiredVertexBufferSizeFromMeshes(
 		const meshcount_t numMeshes, const Mesh* meshes
 	) {
@@ -35,4 +36,5 @@ namespace renderer {
 		}
 		return tot;
 	}
+	*/
 };

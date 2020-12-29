@@ -52,10 +52,12 @@ $(LIBS): $(OBJ)
 depend: .depend 
 	@echo > /dev/null
 
+#TODO this depend could really be cleaned up
 .depend: $(ALL_SRC) $(SPIKE_SRC) $(wildcard include/*.hpp)
 	@rm -f ./.depend
-	g++ $(CFLAGS) -MM $^ >> ./.depend;
-	sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+	@g++ $(CFLAGS) -MM $^ >> ./.depend;
+	@sed -i -r 's/(.+)\.o/build\/\1.o/' .depend
+	@ctags -R *
 
 include .depend
 
