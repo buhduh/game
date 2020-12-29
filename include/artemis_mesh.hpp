@@ -21,7 +21,7 @@ struct Vertex{
 	Vertex() = default;
 	friend std::ostream& operator<<(std::ostream&, const Vertex&);
 	inline bool operator==(const Vertex& rhs) const {
-		return pos          == rhs.pos    && 
+        return pos          == rhs.pos    && 
                color        == rhs.color  && 
                normal       == rhs.normal && 
                textureCoord == rhs.textureCoord;
