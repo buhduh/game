@@ -22,9 +22,9 @@ struct Vertex{
 	friend std::ostream& operator<<(std::ostream&, const Vertex&);
 	inline bool operator==(const Vertex& rhs) const {
 		return pos          == rhs.pos    && 
-			   color        == rhs.color  && 
-			   normal       == rhs.normal && 
-			   textureCoord == rhs.textureCoord;
+               color        == rhs.color  && 
+               normal       == rhs.normal && 
+               textureCoord == rhs.textureCoord;
 	};
 	inline bool operator!=(const Vertex& rhs) const {
 		return !(*this == rhs);
