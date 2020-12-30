@@ -41,10 +41,13 @@ class Mesh{
 	//Will probably enable these once i get the ecs working with the "real" memory system
 	Mesh(const Mesh&) = delete;
 	Mesh(Mesh&&) = delete;
+	Mesh& operator=(const Mesh&);
 	//TODO gonna need to figure this one out
 	//void setTexture(const texture_t&);
 	//const char *getTexels();
 	friend std::ostream& operator<<(std::ostream&, const Mesh&);
+	bool writeToAssetFile(const std::string&) const;
+	bool getFromAssetFile(const std::string&);
 
 	private:
 	vertex_buffer_t m_vertexBuffer;

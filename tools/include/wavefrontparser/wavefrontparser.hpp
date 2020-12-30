@@ -58,7 +58,8 @@ bool processNormalLine(std::string, std::vector<vertex_normal_t>&);
 bool processTextureLine(std::string, std::vector<vertex_tex_coord_t>&);
 void processNoneLine(std::string);
 bool processObjectLine(std::string, Mesh*);
-bool writeBinary(ParsedArgs*, Mesh*);
+bool writeBinary(const ParsedArgs&, const Mesh&);
+
 //std::unique_ptr<Mesh>&: in, the rest out
 bool makeMesh(
 	const std::vector<vertex_pos_t>&, 
@@ -68,7 +69,7 @@ bool makeMesh(
 	std::unique_ptr<Mesh>&
 );
 
-//for unordered_map<Vertex>
+//for unordered_map<Vertex, unsigned long int>
 template<>
 struct std::hash<Vertex> {
 	std::size_t operator()(const Vertex& vert) const {

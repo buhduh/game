@@ -77,6 +77,6 @@ int main(int argc, char* argv[]) {
 		if(!result) {
 			QUIT("failed parsing wavefront object file: '" << pArgs.inFile << "' :(");
 		}
-		//writeBinary(&pArgs, mesh.get());
+		writeBinary(pArgs, *mesh.get());
 	};
 }

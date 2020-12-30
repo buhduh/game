@@ -143,9 +143,8 @@ bool processVertexLine(std::string line, std::vector<vertex_pos_t>& positions) {
 	return true;
 }
 
-//TODO
-bool writeBinary(ParsedArgs* pArgs, Mesh *mesh) {
-	return true;
+bool writeBinary(const ParsedArgs& pArgs, const Mesh& mesh) {
+	return mesh.writeToAssetFile(pArgs.meshName);
 }
 
 //I would prefer to use std::unordered_map<Vertex*, long unsigned int>
@@ -164,6 +163,7 @@ bool makeMesh(
 	vertex_map_t vertMap;
 	vertex_buffer_t verts(faces.size());
 	index_buffer_t indexBuffer(faces.size());
+	long unsigned int highestIndex = 0;
 	for(long unsigned int i = 0; i < faces.size(); i++) {
 		auto p = positions[faces[i].x];
 		vertex_tex_coord_t t = vertex_tex_coord_t(0.0f, 0.0f);
@@ -174,16 +174,21 @@ bool makeMesh(
 		//TODO color
 		verts[i] = Vertex(p, vertex_color_t(0.0f, 1.0f, 0.0f), n, t);
 		auto data = vertMap.try_emplace(verts[i], i);
-		indexBuffer[i] = data.first->second;
+		if(data.second) {
+			indexBuffer[i] = highestIndex++;
+		} else {
+			indexBuffer[i] = data.first->second;
+		}
 	}
-	STD_LOG("all vert length: " << verts.size() << ", map length: " << vertMap.size() << ", expansion ratio of: " << float(verts.size())/float(vertMap.size()));
-	for(long unsigned int i = 0; i < indexBuffer.size();) {
-		STD_LOG("(" << indexBuffer[i++] << ", " << indexBuffer[i++] << ", " << indexBuffer[i++] << ")");
+	if(highestIndex != vertMap.size()) {
+		STD_LOG("an error occurred processing .obj");
+		return false;
 	}
 	vertex_buffer_t actualVerts(vertMap.size());
 	for(long unsigned int i = 0; i < vertMap.size(); i++) {
 		actualVerts[i] = verts[vertMap[verts[i]]];
-		STD_LOG(i << ":" << actualVerts[i]);
 	}
+	Mesh *tMesh = mesh.get();
+	*tMesh = Mesh(actualVerts, indexBuffer);
 	return true;
 }

@@ -3,7 +3,6 @@
 #include "platform.hpp"
 #include "artemis_game.hpp"
 #include "artemis_memory.hpp"
-#include "artemis_asset.hpp"
 #include "renderer.hpp"
 #include "artemis_input.hpp"
 #include "artemis_camera.hpp"
