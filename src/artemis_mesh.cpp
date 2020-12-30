@@ -52,8 +52,8 @@ bool Mesh::writeToAssetFile(const std::string& name) const {
 
 	//vertex buffer
 	numWrite = std::fwrite(
-		m_vertexBuffer,
-		sizeof(decltype(m_vertexBuffer)),
+		m_vertexBuffer.data(),
+		sizeof(Vertex),
 		tLen, oFile
 	);
 	assert(numWrite == tLen);
@@ -77,10 +77,10 @@ bool Mesh::writeToAssetFile(const std::string& name) const {
 		return false;
 	}
 
-	//vertex buffer
+	//index buffer
 	numWrite = std::fwrite(
-		&m_faceBuffer,
-		sizeof(decltype(m_faceBuffer)),
+		m_faceBuffer.data(),
+		sizeof(vertex_index_t),
 		tLen, oFile
 	);
 	assert(numWrite == tLen);
@@ -93,7 +93,6 @@ bool Mesh::writeToAssetFile(const std::string& name) const {
 	return true;
 }
 
-//TODO, pretty sure im not writing vector.data()
 bool Mesh::getFromAssetFile(const std::string& name) {
 
 	std::stringstream fName;
@@ -112,7 +111,7 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 		goto fail;
 	}
 
-	//m_vertexBuffer
+	//m_vertexBuffer len
 	numRead = std::fread(
 		&vertBufferLen,
 		sizeof(decltype(vertBufferLen)),
@@ -130,6 +129,8 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 		std::fclose(iFile);
 		goto fail;
 	}
+
+	//m_vertexBuffer
 	m_vertexBuffer.resize(vertBufferLen);
 	numRead = fread(
 		m_vertexBuffer.data(),	
@@ -143,7 +144,7 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 		goto fail;
 	}
 
-	//m_faceBuffer
+	//m_faceBuffer len
 	numRead = std::fread(
 		&faceBufferLen, 
 		sizeof(decltype(faceBufferLen)), 
@@ -173,7 +174,6 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 		std::fclose(iFile);
 		goto fail;
 	}
-	STD_LOG(*this);
 	return true;
 
 	fail:

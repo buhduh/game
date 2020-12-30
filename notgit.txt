@@ -1,6 +1,0 @@
-I messed git up....
-master branch compiles and is mostly in the state it was before i merged feature/dale/basicshadingV2 and deleted said branch
-feature/dale/memoryattemp2 was branched after the merge and is the newer commit
-I forced master to rewind a few commits so it would at least build and run as expected.
-
-DO NOT make new branches until you can get feature/dale/memoryattempt2 or some derivative branch functioning as master
