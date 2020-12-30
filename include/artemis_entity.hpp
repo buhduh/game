@@ -1,4 +1,0 @@
-#ifndef ARTEMIS_ENTITY_HPP
-#define ARTEMIS_ENTITY_HPP
-
-#endif
