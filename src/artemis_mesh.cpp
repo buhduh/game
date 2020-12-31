@@ -5,18 +5,26 @@
 
 Mesh::Mesh()
 	: m_vertexBuffer{vertex_buffer_t{0}}
-	, m_faceBuffer{index_buffer_t{0}} 
+	, m_indexBuffer{index_buffer_t{0}} 
 {}
 
 Mesh::Mesh(const vertex_buffer_t& vertBuffer, const index_buffer_t& indexBuffer) {
 	m_vertexBuffer = vertBuffer;
-	m_faceBuffer = indexBuffer;
+	m_indexBuffer = indexBuffer;
 }
 
 Mesh& Mesh::operator=(const Mesh& mesh) {
 	this->m_vertexBuffer = mesh.m_vertexBuffer;
-	this->m_faceBuffer = mesh.m_faceBuffer;
+	this->m_indexBuffer = mesh.m_indexBuffer;
 	return *this;
+}
+
+index_buffer_t Mesh::getIndexBuffer() const {
+	return m_indexBuffer;
+}
+
+vertex_buffer_t Mesh::getVertexBuffer() const {
+	return m_vertexBuffer;
 }
 
 //TODO, pretty sure im not writing vector.data()
@@ -29,10 +37,10 @@ bool Mesh::writeToAssetFile(const std::string& name) const {
 	assert(oFile);
 
 	std::stringstream failMsg;
-	failMsg << "failed opening '" << fName.str() << "' for writing";
+	failMsg << "failed writing " << fName.str() << "reason: ";
 
 	if(!oFile) {
-		STD_ERR(failMsg.str());
+		STD_ERR(failMsg.str() << " could not open for writing");
 		return false;
 	}
 
@@ -64,7 +72,7 @@ bool Mesh::writeToAssetFile(const std::string& name) const {
 	}
 
 	//index buffer length
-	tLen = m_faceBuffer.size();
+	tLen = m_indexBuffer.size();
 	numWrite = std::fwrite(
 		&tLen,
 		sizeof(decltype(tLen)),
@@ -79,7 +87,7 @@ bool Mesh::writeToAssetFile(const std::string& name) const {
 
 	//index buffer
 	numWrite = std::fwrite(
-		m_faceBuffer.data(),
+		m_indexBuffer.data(),
 		sizeof(vertex_index_t),
 		tLen, oFile
 	);
@@ -98,16 +106,16 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 	std::stringstream fName;
 	fName << "assets/meshes/" << name << ".bin";
 	std::stringstream failMsg;
-	failMsg << "failed opening '" << fName.str() << "' for reading";
+	failMsg << "failed reading " << fName.str() << " reason: ";
 	FILE *iFile = std::fopen(fName.str().c_str(), "rb");
 	assert(iFile);
 
 	std::size_t numRead;
 	decltype(m_vertexBuffer.size()) vertBufferLen = 0;
-	decltype(m_faceBuffer.size()) faceBufferLen = 0;
+	decltype(m_indexBuffer.size()) indexBufferLen = 0;
 
 	if(!iFile) {
-		STD_ERR(failMsg.str());
+		STD_ERR(failMsg.str() << "could not open for reading");
 		goto fail;
 	}
 
@@ -117,16 +125,12 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 		sizeof(decltype(vertBufferLen)),
 		1, iFile
 	);
-	assert(numRead == 1);
 	if(numRead != 1) {
-		STD_ERR(failMsg.str() << " could not get vertex buffer length");	
-		std::fclose(iFile);
+		STD_ERR(failMsg.str() << "could not get vertex buffer length");	
 		goto fail;
 	}
-	assert(vertBufferLen);
 	if(!vertBufferLen) {
-		STD_ERR(failMsg.str() << " could not load vertex buffer length");
-		std::fclose(iFile);
+		STD_ERR(failMsg.str() << "could not load vertex buffer length");
 		goto fail;
 	}
 
@@ -137,47 +141,45 @@ bool Mesh::getFromAssetFile(const std::string& name) {
 		sizeof(Vertex),
 		vertBufferLen, iFile
 	);
-	assert(numRead == vertBufferLen);
 	if(numRead != vertBufferLen) {
-		STD_ERR(failMsg.str() << " could not load vertex buffer");
-		std::fclose(iFile);
+		STD_ERR(failMsg.str() << "could not load vertex buffer");
 		goto fail;
 	}
 
-	//m_faceBuffer len
+	//m_indexBuffer len
 	numRead = std::fread(
-		&faceBufferLen, 
-		sizeof(decltype(faceBufferLen)), 
+		&indexBufferLen, 
+		sizeof(decltype(indexBufferLen)), 
 		1, iFile
 	);
-	assert(numRead == 1);
 	if(numRead != 1) {
-		STD_ERR(failMsg.str() << " could not get face buffer length");	
-		std::fclose(iFile);
+		STD_ERR(failMsg.str() << "could not get index buffer length");	
 		goto fail;
 	}
-	assert(faceBufferLen);
-	if(!faceBufferLen) {
-		STD_ERR(failMsg.str() << " could not load face buffer length");
-		std::fclose(iFile);
+	if(!indexBufferLen) {
+		STD_ERR(failMsg.str() << "could not load index buffer length");
 		goto fail;
 	}
-	m_faceBuffer.resize(faceBufferLen);
+
+	//m_indexBuffer
+	m_indexBuffer.resize(indexBufferLen);
 	numRead = std::fread(
-		m_faceBuffer.data(),
+		m_indexBuffer.data(),
 		sizeof(vertex_index_t),
-		faceBufferLen, iFile
+		indexBufferLen, iFile
 	);
-	assert(numRead == faceBufferLen);
-	if(numRead != faceBufferLen) {
-		STD_ERR(failMsg.str() << " could not load face buffer");
-		std::fclose(iFile);
+	if(numRead != indexBufferLen) {
+		STD_ERR(failMsg.str() << "could not load index buffer");
 		goto fail;
 	}
 	return true;
 
 	fail:
-	m_faceBuffer.resize(0);	
+	//I was doing these around the failed if statements,
+	//but i think a clean assert(true) works best here
+	std::fclose(iFile);
+	assert(true);
+	m_indexBuffer.resize(0);	
 	m_vertexBuffer.resize(0);
 	*this = Mesh();
 	return false;
@@ -220,13 +222,15 @@ std::ostream& operator<<(std::ostream& out, const Vertex& vert) {
 	return out;
 }
 
+//I use this for debug printing, sticking with the c style fwrite for
+//moving actual bits around
 std::ostream& operator<<(std::ostream &out, const Mesh &mesh) {
 	out << "vertex buffer size: " << mesh.m_vertexBuffer.size() << std::endl;
-	out << "face buffer size: " << mesh.m_faceBuffer.size() << std::endl;
+	out << "index buffer size: " << mesh.m_indexBuffer.size() << std::endl;
 	for(auto v = mesh.m_vertexBuffer.begin(); v < mesh.m_vertexBuffer.end(); v++) {
-		out << "(" << v->pos.x << ", " << v->pos.y << ", " << v->pos.z << ")" << std::endl;
+		out << *v << std::endl;
 	}
-	for(auto f = mesh.m_faceBuffer.begin(); f < mesh.m_faceBuffer.end();) {
+	for(auto f = mesh.m_indexBuffer.begin(); f < mesh.m_indexBuffer.end();) {
 		out << "(" << *(f++) << ", " << *(f++) << ", " << *(f++) << ")" << std::endl;
 	}
 	return out;

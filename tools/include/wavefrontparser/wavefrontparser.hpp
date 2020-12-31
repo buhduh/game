@@ -10,9 +10,6 @@
 #include "artemis_game.hpp"
 #include "artemis_mesh.hpp"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include "glm/gtx/hash.hpp"
-
 enum TYPE {
 	VERTEX,
 	FACE,
@@ -69,15 +66,4 @@ bool makeMesh(
 	std::unique_ptr<Mesh>&
 );
 
-//for unordered_map<Vertex, unsigned long int>
-template<>
-struct std::hash<Vertex> {
-	std::size_t operator()(const Vertex& vert) const {
-		auto posHash = std::hash<vertex_pos_t>()(vert.pos);
-		auto colorHash = std::hash<vertex_color_t>()(vert.color);
-		auto normalHash = std::hash<vertex_normal_t>()(vert.normal);
-		auto textHash = std::hash<vertex_tex_coord_t>()(vert.textureCoord);
-		return posHash ^ colorHash ^ normalHash ^ textHash;
-	}
-};
 #endif

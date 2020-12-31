@@ -22,6 +22,8 @@ const std::vector<const char*> Vulkan::deviceExtensions = {
 
 const size_t Vulkan::MAX_FRAMES_IN_FLIGHT(2);
 
+const static std::string MESH("cube");
+
 //for now the renderer class must be initialized with the meshes
 //they are all shoved into a giant vertex buffer
 //TODO dynamically modify vertex buffer?
@@ -107,10 +109,13 @@ Vulkan::~Vulkan() {
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
+	/*
+	//TODO, textures
 	//vkDestroySampler(device, textureSampler, nullptr);
-	vkDestroyImageView(device, textureImageView, nullptr);
-	vkDestroyImage(device, textureImage, nullptr);
+	//vkDestroyImageView(device, textureImageView, nullptr);
+	//vkDestroyImage(device, textureImage, nullptr);
     vkFreeMemory(device, textureImageMemory, nullptr);
+	*/
 }
 
 void Vulkan::waitIdle() {
@@ -148,8 +153,10 @@ void Vulkan::recreateSwapChain() {
 	createFramebuffers();
 }
 
+//TODO
 void Vulkan::createTextureSampler() {
-
+	return;
+	/*
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
@@ -170,10 +177,12 @@ void Vulkan::createTextureSampler() {
 
 	auto res = vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler);
 	assert(res == VK_SUCCESS);
+	*/
 }
 
+//TODO
 void Vulkan::createTextureImageView() {
-	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	//textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 }
 
 VkImageView Vulkan::createImageView(VkImage image, VkFormat format) {
@@ -198,7 +207,8 @@ VkImageView Vulkan::createImageView(VkImage image, VkFormat format) {
 
 //TODO, this is fucking awful, but i just need something working for now
 void Vulkan::createTextureImage() {
-
+	return;
+	/*
 	int width, height, channels;
 	std::string filename("/home/dale/local/game/models/textures/2k_earth_daymap.jpg");
 	std::ifstream inFile(filename);
@@ -256,6 +266,7 @@ void Vulkan::createTextureImage() {
 	);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
+	*/
 }
 
 VkCommandBuffer Vulkan::beginSingleTimeCommands() {
@@ -496,14 +507,18 @@ void Vulkan::createCommandBuffers() {
 			commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr
 		);
+		//
 		/*
-		TODO
-		uint32_t numIndeces = getIndexCountFromMeshes(numMeshes, meshes);
+		TODO just hardcoding a sphere for now, want to see a texture
+		//dammit
+		*/
+		Mesh mesh = Mesh();
+		mesh.getFromAssetFile(MESH);
+		auto indexBuffer = mesh.getIndexBuffer();
 		vkCmdDrawIndexed(
-			commandBuffers[i], numIndeces,
+			commandBuffers[i], static_cast<uint32_t>(indexBuffer.size()),
 			1, 0, 0, 0
 		);
-		*/
 		vkCmdEndRenderPass(commandBuffers[i]);
 		res = vkEndCommandBuffer(commandBuffers[i]);
 		assert(res == VK_SUCCESS);
@@ -525,17 +540,23 @@ void Vulkan::createDescriptorSets() {
 	);
 	assert(res == VK_SUCCESS);
 	for(size_t i = 0; i < swapChainImages.size(); i++) {
+
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = uniformBuffers[i];
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(UniformBufferObject);
 
+		/*
+		//TODO, textures
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = textureImageView;
 		imageInfo.sampler = textureSampler;
+		*/
 
-		std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+		//TODO, textures
+		//std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+		std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
 		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[0].dstSet = descriptorSets[i];
@@ -545,6 +566,8 @@ void Vulkan::createDescriptorSets() {
 		descriptorWrites[0].descriptorCount = 1;
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
 
+		/*
+		//TODO, textures
 		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[1].dstSet = descriptorSets[i];
 		descriptorWrites[1].dstBinding = 1;
@@ -552,6 +575,7 @@ void Vulkan::createDescriptorSets() {
 		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		descriptorWrites[1].descriptorCount = 1;
 		descriptorWrites[1].pImageInfo = &imageInfo;
+		*/
 
 		vkUpdateDescriptorSets(
 			device, static_cast<uint32_t>(descriptorWrites.size()), 
@@ -597,13 +621,13 @@ void Vulkan::createUniformBuffers() {
 	}
 }
 
-//meshes must be contiguous in memory!!!
-//TODO
 void Vulkan::createVertexBuffer() {
-	return;
-	/*
-	if(numMeshes == 0) return;
-	VkDeviceSize bufferSize = getRequiredVertexBufferSizeFromMeshes(numMeshes, meshes);
+	//VkDeviceSize bufferSize = getRequiredVertexBufferSizeFromMeshes(numMeshes, meshes);
+
+	Mesh mesh = Mesh();
+	mesh.getFromAssetFile(MESH);
+	auto vertBuffer = mesh.getVertexBuffer();
+	VkDeviceSize bufferSize = vertBuffer.size() * sizeof(Vertex);
 
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
@@ -614,7 +638,7 @@ void Vulkan::createVertexBuffer() {
 	);
 	void* data;
 	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-	std::memcpy(data, meshes->vertices, bufferSize);
+	std::memcpy(data, vertBuffer.data(), bufferSize);
 	vkUnmapMemory(device, stagingBufferMemory);
 	createBuffer(
 		bufferSize,
@@ -625,53 +649,47 @@ void Vulkan::createVertexBuffer() {
 	copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
-	*/
 }
 
-//meshes must be contiguous in memory!!!
-//TODO oh yeah, im fucking this up now!!!
-//going to create a vert index buffer directly on the
-//stack for now
-//TODO
 void Vulkan::createIndexBuffer() {
-	return;
-	/*
-	if(numMeshes == 0) return;
 
-	//does this want bytes?
-	VkDeviceSize vertIndexBufferSize = getRequiredIndexBufferSizeFromMeshes(numMeshes, meshes);
+	Mesh mesh = Mesh();
+	mesh.getFromAssetFile(MESH);
+	auto mIndexBuffer = mesh.getIndexBuffer();
+
+	STD_LOG(mesh);
+
+	VkDeviceSize mIndexBufferSize = mIndexBuffer.size() * sizeof(vertex_index_t);;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
     createBuffer(
-		vertIndexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		mIndexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 		stagingBuffer, stagingBufferMemory
 	);
 
-	//TODO the gpu requires vertex indeces to be 16bit wide?
-	//indeces are now a uvec3, the x component is the
-	//vert index
+	/*
 	auto vertIndexCount = getIndexCountFromMeshes(numMeshes, meshes);
 	vertindex_t vertIndeces[vertIndexCount];
 	//assert(sizeof(vertindex_t) == sizeof(meshes->indeces[0].x));
 	for(uint32_t i = 0; i < vertIndexCount; i++) {
 		vertIndeces[i] = static_cast<vertindex_t>(meshes->indeces[i].x);
 	}
+	*/
 
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, vertIndexBufferSize, 0, &data);
-    std::memcpy(data, vertIndeces, vertIndexBufferSize);
+    void *data;
+    vkMapMemory(device, stagingBufferMemory, 0, mIndexBufferSize, 0, &data);
+    std::memcpy(data, mIndexBuffer.data(), mIndexBufferSize);
     vkUnmapMemory(device, stagingBufferMemory);
     createBuffer(
-		vertIndexBufferSize,
+		mIndexBufferSize,
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory
 	);
-    copyBuffer(stagingBuffer, indexBuffer, vertIndexBufferSize);
+    copyBuffer(stagingBuffer, indexBuffer, mIndexBufferSize);
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
-	*/
 }
 
 void Vulkan::createGraphicsPipeline() {
@@ -719,18 +737,35 @@ void Vulkan::createGraphicsPipeline() {
 	bindingDescription.stride = sizeof(Vertex);
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	VkVertexInputAttributeDescription attributeDescription = {};
-	attributeDescription.binding = 0;
-	attributeDescription.location = 0;
-	attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-	attributeDescription.offset = 0;
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions = 
+		std::vector<VkVertexInputAttributeDescription>(4);
+
+	attributeDescriptions[0].binding = 0;
+	attributeDescriptions[0].location = 0;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+	attributeDescriptions[1].binding = 0;
+	attributeDescriptions[1].location = 1;
+	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(Vertex, normal);
+
+	attributeDescriptions[3].binding = 0;
+	attributeDescriptions[3].location = 3;
+	attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[3].offset = offsetof(Vertex, textureCoord);
 
 	VkPipelineVertexInputStateCreateInfo vInputInfo = {};
 	vInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vInputInfo.vertexBindingDescriptionCount = 1;
-	vInputInfo.vertexAttributeDescriptionCount = 1;
+	vInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.size();
 	vInputInfo.pVertexBindingDescriptions = &bindingDescription;
-	vInputInfo.pVertexAttributeDescriptions = &attributeDescription;
+	vInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

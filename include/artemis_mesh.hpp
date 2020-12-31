@@ -5,6 +5,9 @@
 #include <ostream>
 #include <glm/glm.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp"
+
 typedef glm::vec3 vertex_pos_t;
 typedef glm::vec3 vertex_color_t;
 typedef glm::vec3 vertex_normal_t;
@@ -13,12 +16,19 @@ typedef uint16_t  vertex_index_t;
 
 //Probably need to deal with alignments...
 struct Vertex{
+	//Data
 	vertex_pos_t       pos;
 	vertex_color_t     color;
 	vertex_normal_t    normal;
 	vertex_tex_coord_t textureCoord;
+	//end data
+
 	Vertex(vertex_pos_t, vertex_color_t, vertex_normal_t, vertex_tex_coord_t);
 	Vertex() = default;
+	//Probably don't want to delete these but I obviously will be doing
+	//memory "stuff" with them at some point
+	//Vertex(Vertex&&) = delete;
+	//Vertex(const Vertex&) = delete;
 	friend std::ostream& operator<<(std::ostream&, const Vertex&);
 	inline bool operator==(const Vertex& rhs) const {
         return pos          == rhs.pos    && 
@@ -48,12 +58,28 @@ class Mesh{
 	friend std::ostream& operator<<(std::ostream&, const Mesh&);
 	bool writeToAssetFile(const std::string&) const;
 	bool getFromAssetFile(const std::string&);
+	index_buffer_t getIndexBuffer() const;
+	vertex_buffer_t getVertexBuffer() const;
+	//TODO figure out why the first const has no effect
+	//const vertex_buffer_t getVertexBuffer() const;
 
 	private:
 	vertex_buffer_t m_vertexBuffer;
-	index_buffer_t  m_faceBuffer;
+	index_buffer_t  m_indexBuffer;
 	//TODO gonna need to figure this one out
 	//texture_t m_texels;
+};
+
+//for unordered_map<Vertex, unsigned long int>
+template<>
+struct std::hash<Vertex> {
+	std::size_t operator()(const Vertex& vert) const {
+		auto posHash = std::hash<vertex_pos_t>()(vert.pos);
+		auto colorHash = std::hash<vertex_color_t>()(vert.color);
+		auto normalHash = std::hash<vertex_normal_t>()(vert.normal);
+		auto textHash = std::hash<vertex_tex_coord_t>()(vert.textureCoord);
+		return posHash ^ colorHash ^ normalHash ^ textHash;
+	}
 };
 
 #endif

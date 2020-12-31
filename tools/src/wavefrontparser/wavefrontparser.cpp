@@ -117,11 +117,11 @@ bool processTextureLine(std::string line, std::vector<vertex_tex_coord_t>& textu
 	auto u = atof(tu.c_str());
 	auto v = atof(tv.c_str());
 	if(u > 1.0f || u < 0.0f) {
-		STD_LOG("Texture U,V coordinates must be between 0.0 and 1.0");
+		STD_ERR("Texture U,V coordinates must be between 0.0 and 1.0");
 		return false;
 	}
 	if(v > 1.0f || v < 0.0f) {
-		STD_LOG("Texture U,V coordinates must be between 0.0 and 1.0");
+		STD_ERR("Texture U,V coordinates must be between 0.0 and 1.0");
 		return false;
 	}
 	texture.push_back(vertex_tex_coord_t(u,v));
@@ -172,7 +172,7 @@ bool makeMesh(
 		}
 		auto n = normals[faces[i].z];
 		//TODO color
-		verts[i] = Vertex(p, vertex_color_t(0.0f, 1.0f, 0.0f), n, t);
+		verts[i] = Vertex(p, vertex_color_t(1.0f, 1.0f, 0.0f), n, t);
 		auto data = vertMap.try_emplace(verts[i], i);
 		if(data.second) {
 			indexBuffer[i] = highestIndex++;

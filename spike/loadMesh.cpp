@@ -3,5 +3,6 @@
 
 int main(void) {
 	Mesh mesh;
-	mesh.getFromAssetFile("cube");
+	mesh.getFromAssetFile("sphere");
+	STD_LOG(mesh);
 }
