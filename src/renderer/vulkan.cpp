@@ -22,7 +22,7 @@ const std::vector<const char*> Vulkan::deviceExtensions = {
 
 const size_t Vulkan::MAX_FRAMES_IN_FLIGHT(2);
 
-const static std::string MESH("cube");
+const static std::string MESH("sphere");
 
 //for now the renderer class must be initialized with the meshes
 //they are all shoved into a giant vertex buffer
@@ -109,13 +109,10 @@ Vulkan::~Vulkan() {
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
-	/*
-	//TODO, textures
-	//vkDestroySampler(device, textureSampler, nullptr);
-	//vkDestroyImageView(device, textureImageView, nullptr);
-	//vkDestroyImage(device, textureImage, nullptr);
+	vkDestroySampler(device, textureSampler, nullptr);
+	vkDestroyImageView(device, textureImageView, nullptr);
+	vkDestroyImage(device, textureImage, nullptr);
     vkFreeMemory(device, textureImageMemory, nullptr);
-	*/
 }
 
 void Vulkan::waitIdle() {
@@ -153,10 +150,7 @@ void Vulkan::recreateSwapChain() {
 	createFramebuffers();
 }
 
-//TODO
 void Vulkan::createTextureSampler() {
-	return;
-	/*
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
@@ -177,12 +171,10 @@ void Vulkan::createTextureSampler() {
 
 	auto res = vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler);
 	assert(res == VK_SUCCESS);
-	*/
 }
 
-//TODO
 void Vulkan::createTextureImageView() {
-	//textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 }
 
 VkImageView Vulkan::createImageView(VkImage image, VkFormat format) {
@@ -207,8 +199,6 @@ VkImageView Vulkan::createImageView(VkImage image, VkFormat format) {
 
 //TODO, this is fucking awful, but i just need something working for now
 void Vulkan::createTextureImage() {
-	return;
-	/*
 	int width, height, channels;
 	std::string filename("/home/dale/local/game/models/textures/2k_earth_daymap.jpg");
 	std::ifstream inFile(filename);
@@ -266,7 +256,6 @@ void Vulkan::createTextureImage() {
 	);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
-	*/
 }
 
 VkCommandBuffer Vulkan::beginSingleTimeCommands() {
@@ -546,17 +535,12 @@ void Vulkan::createDescriptorSets() {
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(UniformBufferObject);
 
-		/*
-		//TODO, textures
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = textureImageView;
 		imageInfo.sampler = textureSampler;
-		*/
 
-		//TODO, textures
-		//std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-		std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+		std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
 		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[0].dstSet = descriptorSets[i];
@@ -566,8 +550,6 @@ void Vulkan::createDescriptorSets() {
 		descriptorWrites[0].descriptorCount = 1;
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-		/*
-		//TODO, textures
 		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[1].dstSet = descriptorSets[i];
 		descriptorWrites[1].dstBinding = 1;
@@ -575,7 +557,6 @@ void Vulkan::createDescriptorSets() {
 		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		descriptorWrites[1].descriptorCount = 1;
 		descriptorWrites[1].pImageInfo = &imageInfo;
-		*/
 
 		vkUpdateDescriptorSets(
 			device, static_cast<uint32_t>(descriptorWrites.size()), 
@@ -656,8 +637,6 @@ void Vulkan::createIndexBuffer() {
 	Mesh mesh = Mesh();
 	mesh.getFromAssetFile(MESH);
 	auto mIndexBuffer = mesh.getIndexBuffer();
-
-	STD_LOG(mesh);
 
 	VkDeviceSize mIndexBufferSize = mIndexBuffer.size() * sizeof(vertex_index_t);;
 
@@ -795,11 +774,11 @@ void Vulkan::createGraphicsPipeline() {
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	//rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
+	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+	//rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
 	rasterizer.lineWidth = 1.0f;
-	//rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.cullMode = VK_CULL_MODE_NONE;
+	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	//rasterizer.cullMode = VK_CULL_MODE_NONE;
 	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f; // Optional

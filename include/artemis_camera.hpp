@@ -10,7 +10,12 @@
 
 class Camera {
 	public:
-	static Camera* newCamera(IArena*, glm::vec3, glm::vec3, glm::vec3);
+	static Camera* newCamera(
+		IArena*, 
+		glm::vec3 eye, 
+		glm::vec3 center, 
+		glm::vec3 up
+	);
 	glm::vec3 eye;
 	glm::vec3 center;
 	glm::vec3 up;
@@ -28,7 +33,7 @@ class Camera {
 	void snapToOrigin();
 	private:
 	void updateView();
-	Camera(glm::vec3, glm::vec3, glm::vec3);
+	Camera(glm::vec3 eye, glm::vec3 center, glm::vec3 up);
 	Camera(const Camera&) = delete;
 };
 

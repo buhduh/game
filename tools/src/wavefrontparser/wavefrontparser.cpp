@@ -147,48 +147,37 @@ bool writeBinary(const ParsedArgs& pArgs, const Mesh& mesh) {
 	return mesh.writeToAssetFile(pArgs.meshName);
 }
 
-//I would prefer to use std::unordered_map<Vertex*, long unsigned int>
-//but the underlying calls are comparing the actual addresses instead of 
-//their pointed to value. Presumably, this would improve performance some but
-//I'm not going to worry about it too much, I would like to figure it out at some 
-//point though.
 typedef std::unordered_map<Vertex, long unsigned int> vertex_map_t;
 bool makeMesh(
 	const std::vector<vertex_pos_t>& positions, 
-	const std::vector<glm::uvec3>& faces, 
+	const std::vector<glm::uvec3>& indeces, 
 	const std::vector<vertex_normal_t>& normals, 
 	const std::vector<vertex_tex_coord_t>& textureCoords, 
 	std::unique_ptr<Mesh>& mesh
 ) {
 	vertex_map_t vertMap;
-	vertex_buffer_t verts(faces.size());
-	index_buffer_t indexBuffer(faces.size());
-	long unsigned int highestIndex = 0;
-	for(long unsigned int i = 0; i < faces.size(); i++) {
-		auto p = positions[faces[i].x];
-		vertex_tex_coord_t t = vertex_tex_coord_t(0.0f, 0.0f);
+	vertex_buffer_t vertexBuffer(0);
+	index_buffer_t indexBuffer(indeces.size());
+	for(long unsigned int i = 0; i < indeces.size(); i++) {
+		auto newPos = vertex_pos_t(positions[indeces[i].x]);		
+		auto newColor = glm::vec3(1.0f, 1.0f, 0.0f);
+		auto newNormal = vertex_normal_t(normals[indeces[i].z]);
+		auto newTextCoord = vertex_tex_coord_t(0.0f, 0.0f);
 		if(textureCoords.size()) {
-			t = textureCoords[faces[i].y];
+			newTextCoord = vertex_tex_coord_t(textureCoords[indeces[i].y]);
 		}
-		auto n = normals[faces[i].z];
-		//TODO color
-		verts[i] = Vertex(p, vertex_color_t(1.0f, 1.0f, 0.0f), n, t);
-		auto data = vertMap.try_emplace(verts[i], i);
-		if(data.second) {
-			indexBuffer[i] = highestIndex++;
+		Vertex newVert = Vertex(newPos, newColor, newNormal, newTextCoord);
+		auto res = vertMap.try_emplace(newVert, i);
+		if(res.second) {
+			vertexBuffer.push_back(newVert);
+			//This is i, but this feels more "correct" to me, idk
+			indexBuffer[i] = 
+				static_cast<vertex_index_t>(vertexBuffer.size() - 1);
 		} else {
-			indexBuffer[i] = data.first->second;
+			indexBuffer[i] = static_cast<vertex_index_t>(res.first->second);
 		}
 	}
-	if(highestIndex != vertMap.size()) {
-		STD_LOG("an error occurred processing .obj");
-		return false;
-	}
-	vertex_buffer_t actualVerts(vertMap.size());
-	for(long unsigned int i = 0; i < vertMap.size(); i++) {
-		actualVerts[i] = verts[vertMap[verts[i]]];
-	}
-	Mesh *tMesh = mesh.get();
-	*tMesh = Mesh(actualVerts, indexBuffer);
+	*mesh.get() = Mesh(vertexBuffer, indexBuffer);
+	STD_LOG("index buffer length: " << indexBuffer.size() << ", vertex buffer length: " << vertexBuffer.size());
 	return true;
 }

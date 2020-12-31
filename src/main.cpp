@@ -33,7 +33,14 @@ static const float ANGULAR_VEL = PI_OVER_2;
 
 renderer::UniformBufferObject* constructUBO(IArena* arena, Camera* camera) {
 	renderer::UniformBufferObject ubo = {};
-	ubo.model = glm::mat4(1.0f);
+	
+	//auto xRotation = glm::rotate(glm::mat4(1.0f), 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	//auto yRotation = glm::rotate(glm::mat4(1.0f), 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+	auto zRotation = glm::rotate(glm::mat4(1.0f), 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+	
+	//ubo.model = zRotation*yRotation*xRotation;
+	//ubo.model = glm::mat4(1.0f);
+	ubo.model = zRotation;
 	ubo.view = camera->view;
 	renderer::UniformBufferObject* toRet = 
 		(renderer::UniformBufferObject*) arena->allocate(sizeof(ubo));
@@ -222,9 +229,9 @@ int main(void) {
 
 	Camera* camera = Camera::newCamera(
 		arena, 
-		glm::vec3(2.0f, 2.0f, 2.0f), 
+		glm::vec3(0.0f, 0.0f, 4.0f), 
 		glm::vec3(0.0f, 0.0f, 0.0f), 
-		glm::vec3(0.0f, 0.0f, 1.0f)
+		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 
 	/*

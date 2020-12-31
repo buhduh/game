@@ -6,9 +6,8 @@
 //the reindexing wavefrontparser algorithm is busted :(
 int main(void) {
 	Mesh mesh;
-	mesh.getFromAssetFile("cube");
-	//mesh.getFromAssetFile("sphere");
-	STD_LOG(mesh);
+	//mesh.getFromAssetFile("cube");
+	mesh.getFromAssetFile("sphere");
 	std::unordered_map<Vertex, int> set;
 	int i = 0;
 	auto vBuffer = mesh.getVertexBuffer();
