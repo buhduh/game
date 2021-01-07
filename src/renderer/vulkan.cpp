@@ -10,11 +10,12 @@
 
 #include "renderer.hpp"
 #include "artemis_game.hpp"
+#include "artemis_mesh.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
-namespace renderer {
+using namespace graphics;
 
 const std::vector<const char*> Vulkan::deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -113,6 +114,10 @@ Vulkan::~Vulkan() {
 	vkDestroyImageView(device, textureImageView, nullptr);
 	vkDestroyImage(device, textureImage, nullptr);
     vkFreeMemory(device, textureImageMemory, nullptr);
+}
+
+void Vulkan::loadGUITextureRGBA32(std::vector<byte> texture) {
+
 }
 
 void Vulkan::waitIdle() {
@@ -681,7 +686,7 @@ void Vulkan::createGraphicsPipeline() {
 		size_t shaderFSize = platform::getFileSize(fName);
 		//this might be an issue
 		char buffer[shaderFSize];
-		size_t loaded = loadSpirV(buffer, shaderFSize, fName);
+		size_t loaded = platform::loadFileIntoBuffer(buffer, shaderFSize, fName);
 		assert(loaded == shaderFSize);
 		createShaderModule(&vertShaderModule, buffer, shaderFSize);
 	}
@@ -690,7 +695,7 @@ void Vulkan::createGraphicsPipeline() {
 		size_t shaderFSize = platform::getFileSize(fName);
 		//this might be an issue
 		char buffer[shaderFSize];
-		size_t loaded = loadSpirV(buffer, shaderFSize, fName);
+		size_t loaded = platform::loadFileIntoBuffer(buffer, shaderFSize, fName);
 		assert(loaded == shaderFSize);
 		createShaderModule(&fragShaderModule, buffer, shaderFSize);
 	}
@@ -870,7 +875,6 @@ void Vulkan::createGraphicsPipeline() {
 	vkDestroyShaderModule(device, fragShaderModule, nullptr);
 	vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
-
 
 void Vulkan::drawFrame(UniformBufferObject* ubo) {
 	vkWaitForFences(
@@ -1494,5 +1498,3 @@ void Vulkan::createInstance() {
 	VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
 	assert(result == VK_SUCCESS && instance != VK_NULL_HANDLE);
 }
-
-};

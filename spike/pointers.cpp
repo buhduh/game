@@ -1,11 +1,12 @@
 #include "artemis_game.hpp"
 
+void doFoo(int*& foo) {
+	STD_LOG(foo);
+}
+
 int main() {
-	int* foo;
-	int* bar;
-	int baz = 5;
-	foo = &baz;
-	bar = &baz;
-	*foo = 42;
-	STD_LOG("foo: " << *foo << ", bar: " << *bar << ", baz: " << baz);
+	int foo = 42;
+	int* fooP = &foo;
+	doFoo(fooP);
+	//doFoo(&foo);
 }

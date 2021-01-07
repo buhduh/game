@@ -28,6 +28,10 @@ namespace platform {
 		return setCacheLineSize;
 	}
 
+	void getWindowSize(Window* window, int& height, int& width) {
+		glfwGetWindowSize(window, &width, &height);
+	}
+
 	Window* createWindow() {
 		glfwInit();
 		auto monitor = glfwGetPrimaryMonitor();

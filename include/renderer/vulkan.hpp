@@ -8,7 +8,7 @@
 
 #include "platform.hpp"
 
-namespace renderer {
+namespace graphics {
 
 class Vulkan  {
 	public:
@@ -16,6 +16,7 @@ class Vulkan  {
 	~Vulkan();
 	void drawFrame(UniformBufferObject* ubo);
 	void waitIdle();
+	void loadGUITextureRGBA32(std::vector<byte>);
 	private:
 	const static std::vector<const char*> deviceExtensions;
 	const static size_t MAX_FRAMES_IN_FLIGHT;

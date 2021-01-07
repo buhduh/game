@@ -6,12 +6,16 @@
 #include <cstdint>
 #include <stddef.h>
 #include <stdint.h>
+#include <climits>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+typedef glm::vec2 vec2;
+typedef glm::vec3 vec3;
+typedef glm::mat4 mat4;
 
 #define KILOBYTES(SIZE) (1024 * (SIZE))
 #define MEGABYTES(SIZE) (1024 * KILOBYTES(SIZE))
@@ -42,5 +46,7 @@ inline uintptr_t toUPtr(const void* ptr) {
 //probably when I need stuff not in glm.
 static const float PI = glm::pi<float>();
 static const float PI_OVER_2 = glm::pi<float>() / 2.0f;
+
+typedef unsigned char byte;
 
 #endif

@@ -1,37 +1,43 @@
+/*
+* From now on, ALL render interactions pass through this interface.
+* TODO, refactor main.cpp and other files so that the above is true, eg,
+* 	no more Vulkan::* stuff
+*/
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
 #include <cstddef>
-#include <string>
 #include <glm/glm.hpp>
+#include <vector>
+#include <memory>
 
-#include "artemis_mesh.hpp"
+#include "artemis_game.hpp"
+#include "platform.hpp"
 
-namespace renderer {
-	//don't know if this is applicable to other rendering backends
-	//besides vulkan, going to assume it is
-	size_t loadSpirV(char*, size_t, const std::string&);
-	//adds up the verteces and sizeof vertex for all meshes in the list
-	//size_t getRequiredVertexBufferSizeFromMeshes(const meshcount_t, const Mesh*);
-	//size_t getRequiredIndexBufferSizeFromMeshes(const meshcount_t, const Mesh*);
-	//uint32_t getIndexCountFromMeshes(const meshcount_t, const Mesh*);
-
+namespace graphics {
 	struct UniformBufferObject {
-		alignas(16) glm::mat4 model;
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
+		alignas(16) mat4 model;
+		alignas(16) mat4 view;
+		alignas(16) mat4 proj;
 	};
 
-	/*
-	struct GPUVertexAttribute {
-		alignas(16) vertex_t vertex;
-		alignas(16) normal_t normal;	
+	template<class T>
+	class Renderer {
+		public:
+		Renderer(platform::Window* window) : backend(std::unique_ptr<T>(new T(window))) {};
+		Renderer(const Renderer&) = delete;
+		Renderer(Renderer&&) = delete;
+		Renderer& operator=(const Renderer&) = delete;
+		void loadGUITexturesRGBA32(std::vector<byte> texture) {
+			backend->loadGUITextureRGBA32(texture);
+		};
+		private:
+		std::unique_ptr<T> backend;
 	};
-	*/
 
+	std::unique_ptr<Renderer<class Vulkan>> makeDefaultRenderer(platform::Window*);
 };
 
-//only vulkan for now
 #include "renderer/vulkan.hpp"
 
 #endif

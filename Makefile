@@ -1,9 +1,8 @@
 #TODO Really need to sort these flags out
 
 DIR = $(shell pwd)
-export CFLAGS := -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -DDEBUG
-export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs -lpthread
-#export LDFLAGS := -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs
+export CFLAGS := -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -I$(DIR)/third_party/ImGui -DDEBUG
+export LDFLAGS := -Llib -lImGui -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs -lpthread
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 
@@ -12,11 +11,14 @@ ifeq ($(shell uname), Linux)
 PLATFORM_SRC = src/platform/linux_platform.cpp
 endif
 
+EXE = bin/game
+
 #main is a special snowflake, mostly for testing and the main function weirdness
 TEMP_ALL_SRC = $(shell find src -name "*.cpp")
 #probably a better way to do this, but meh
 ALL_SRC = $(filter-out $(ALL_PLATFORM_SRC), $(TEMP_ALL_SRC)) $(PLATFORM_SRC)
 SRC = $(filter-out src/main.cpp, $(ALL_SRC))
+
 ALL_OBJ = $(patsubst src/%.cpp, build/%.o, $(ALL_SRC))
 OBJ = $(patsubst src/%.cpp, build/%.o, $(SRC))
 
@@ -39,20 +41,34 @@ SHADER_SPV = $(patsubst shaders/%, assets/shaders/%.spv, $(SHADER_SRC))
 SPIKE_SRC = $(wildcard spike/*.cpp)
 SPIKE_BIN = $(patsubst spike/%.cpp, bin/spike_%, $(SPIKE_SRC))
 
-EXE = bin/game
-LIBS = lib/libArtemis.a
+LIB = lib/libArtemis.a
+
+THIRD_PARTY = $(wildcard third_party/*/*.cpp)
+UNIQUE_THIRD_PARTY = $(sort $(dir $(THIRD_PARTY)))
+THIRD_PARTY_LIBS = $(UNIQUE_THIRD_PARTY:third_party/%/=lib/lib%.a)
+#LIB depends on third party, must be built later
+LIBS = $(THIRD_PARTY_LIBS) $(LIB)
 
 BUILD_DIRS = $(sort $(dir $(ALL_OBJ) $(WAVEFRONT_BIN) $(LIBS)) bin $(MESH_ASSETS_DIR) $(SHADERS_DIR))
 
-all: depend $(BUILD_DIRS) $(EXE) $(LIBS) $(WAVEFRONT_ASSETS) shaders
+.PHONY: all
+all: depend $(BUILD_DIRS) $(LIBS) $(EXE) $(WAVEFRONT_ASSETS) shaders
 
-$(LIBS): $(OBJ)
-	ar crf $@ $^
+.PHONY:third_party
+third_party: $(THIRD_PARTY_LIBS)
+
+$(THIRD_PARTY_LIBS): $(BUILD_DIRS)
+	@$(MAKE) -C third_party
+	@cp third_party/lib/* lib/
+
+$(LIB): $(OBJ)
+	@ar crf $@ $^
 
 depend: .depend 
 	@echo > /dev/null
 
 #TODO this depend could really be cleaned up
+.PHONY:depend
 .depend: $(ALL_SRC) $(SPIKE_SRC) $(wildcard include/*.hpp)
 	@rm -f ./.depend
 	@g++ $(CFLAGS) -MM $^ >> ./.depend;
@@ -61,15 +77,17 @@ depend: .depend
 
 include .depend
 
+.PHONY: test
 test: $(BUILD_DIRS) $(TEST_BIN)
 	$(TEST_BIN)
 
 $(TEST_BIN): $(OBJ) $(TEST_OBJ)
-	g++ -g $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	@g++ -g $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(TEST_OBJ): build/test_%.o: test/%.cpp
-	g++ -g $(CFLAGS) -o $@ -c $^ $(LDFLAGS)
+	@g++ -g $(CFLAGS) -o $@ -c $^ $(LDFLAGS)
 
+.PHONY: shaders
 shaders: $(BUILD_DIRS) $(SHADER_SPV)	
 
 $(SHADER_SPV): assets/shaders/%.spv: shaders/%
@@ -81,6 +99,7 @@ $(EXE): $(ALL_OBJ)
 $(ALL_OBJ): build/%.o: src/%.cpp
 	g++ -g $(CFLAGS) -o $@ -c $< $(LDFLAGS)
 
+.PHONY: spike
 spike: $(BUILD_DIRS) $(OBJ) $(SPIKE_BIN)
 
 bin/spike_%: spike/%.cpp
@@ -90,7 +109,7 @@ $(BUILD_DIRS):
 	@mkdir -p $@
 
 $(WAVEFRONT_ASSETS): %: models/wavefront/%.obj $(WAVEFRONT_TOOL)
-	$(WAVEFRONT_TOOL) $(filter-out $(WAVEFRONT_TOOL), $^) $@
+	@$(WAVEFRONT_TOOL) $(filter-out $(WAVEFRONT_TOOL), $^) $@
 	@touch $(WAVEFRONT_BLD)
 
 wavefront: $(WAVEFRONT_ASSETS)
@@ -100,12 +119,20 @@ $(WAVEFRONT_TOOL): $(WAVEFRONT_BLD)
 
 $(WAVEFRONT_BLD):
 
+.PHONY: clean
 clean:
 	rm -rf $(filter-out ./, $(BUILD_DIRS))
-	@rm -f .depend
-	@$(MAKE) -C tools clean
 
+.PHONY: clean_spike
 clean_spike:
 	@rm -f bin/spike_*
 
-.PHONY: all wavefront shaders spike depend
+.PHONY: clean_third_party
+clean_third_party:
+	@rm -f $(THIRD_PARTY_LIBS)
+	@$(MAKE) -C third_party clean
+
+.PHONY: purge
+purge: clean clean_third_party
+	@$(MAKE) -C tools clean
+	@rm -f .depend
