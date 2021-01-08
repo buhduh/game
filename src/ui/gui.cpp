@@ -7,11 +7,11 @@ using namespace UI;
 //TODO, resizing
 //I do realize im hardcoding vulkan here...
 GUI::GUI(
-	platform::Window& window, 
-	graphics::Renderer<graphics::Vulkan>& renderer
+	std::shared_ptr<platform::Window> window, 
+	std::shared_ptr<graphics::Renderer<graphics::Vulkan>> renderer
 ) 
-: m_window(&window)
-, m_renderer(&renderer)
+: m_window(window)
+, m_renderer(renderer)
 {
 	ImGui::CreateContext();
 	m_io = ImGui::GetIO();
@@ -27,7 +27,7 @@ GUI::GUI(
 
 void GUI::setDisplaySize() {
 	int width, height;
-	platform::getWindowSize(m_window, height, width);
+	platform::getWindowSize(m_window.get(), height, width);
 	m_io.DisplaySize.x = static_cast<float>(width);
 	m_io.DisplaySize.y = static_cast<float>(height);
 }
