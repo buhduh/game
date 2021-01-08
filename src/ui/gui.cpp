@@ -3,8 +3,8 @@
 
 using namespace UI;
 
-//TODO, what is the ref count of window after this?
 //TODO, resizing
+//TODO, does window and renderer ref count increment?
 //I do realize im hardcoding vulkan here...
 GUI::GUI(
 	std::shared_ptr<platform::Window> window, 
@@ -21,7 +21,7 @@ GUI::GUI(
 	int height, width;
 	m_io.Fonts->GetTexDataAsRGBA32(&pixelP, &width, &height);
 	std::vector<byte> pixels(pixelP, pixelP + (height * width * 4));
-	m_renderer->loadGUITexturesRGBA32(pixels);
+	m_renderer->loadGUITexturesRGBA32(pixels, height, width);
     m_io.Fonts->ClearTexData();
 }
 

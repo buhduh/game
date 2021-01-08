@@ -28,8 +28,12 @@ namespace graphics {
 		Renderer(const Renderer&) = delete;
 		Renderer(Renderer&&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
-		void loadGUITexturesRGBA32(std::vector<byte> texture) {
-			backend->loadGUITextureRGBA32(texture);
+		void loadGUITexturesRGBA32(
+				const std::vector<byte>& texture,
+				const int& height,
+				const int& width
+		) {
+			backend->loadGUITextureRGBA32(texture, height, width);
 		};
 		private:
 		std::unique_ptr<T> backend;

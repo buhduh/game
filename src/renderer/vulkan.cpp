@@ -66,6 +66,9 @@ Vulkan::Vulkan(platform::Window* window)
 	, textureImageMemory(VK_NULL_HANDLE)
 	, textureImageView(VK_NULL_HANDLE)
 	, textureSampler(VK_NULL_HANDLE)
+	, guiTextureImage(VK_NULL_HANDLE)
+	, guiTextureImageMemory(VK_NULL_HANDLE)
+	, guiTextureImageView(VK_NULL_HANDLE)
 {
 	createInstance();
 	createSurface();
@@ -93,7 +96,7 @@ Vulkan::Vulkan(platform::Window* window)
 	createSyncObjects();
 }
 
-//TODO
+//TODO, this is fucked!!!! does it matter?
 Vulkan::~Vulkan() {
 	cleanupSwapChain();
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -116,8 +119,63 @@ Vulkan::~Vulkan() {
     vkFreeMemory(device, textureImageMemory, nullptr);
 }
 
-void Vulkan::loadGUITextureRGBA32(std::vector<byte> texture) {
+//TODO condense this with createTextureImage when textures are fully dynamic
+void Vulkan::loadGUITextureRGBA32(
+	const std::vector<byte>& texture, 
+	const int& height, const int& width
+) {
+	/*
+	basically this function encapsulates these
+	createTextureImage();
+	createTextureImageView();
+	*/
+	VkDeviceSize textureSize = texture.size();
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(
+		textureSize,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		stagingBuffer,
+		stagingBufferMemory
+	);
+	void* data;
+	auto res = vkMapMemory(device, stagingBufferMemory, 0, textureSize, 0, &data);
+	assert(res == VK_SUCCESS);
+    memcpy(data, texture.data(), static_cast<size_t>(textureSize));
+	vkUnmapMemory(device, stagingBufferMemory);
+	createImage(
+		height, 
+		width, 
+		VK_FORMAT_R8G8B8A8_SRGB, 
+		VK_IMAGE_TILING_OPTIMAL, 
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		guiTextureImage,
+		guiTextureImageMemory
+	);
+    transitionImageLayout(
+		guiTextureImage, 
+		VK_FORMAT_R8G8B8A8_SRGB, 
+		VK_IMAGE_LAYOUT_UNDEFINED, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+	);
+    copyBufferToImage(
+		stagingBuffer, 
+		guiTextureImage, 
+		static_cast<uint32_t>(height),
+		static_cast<uint32_t>(width)
+	);
+    transitionImageLayout(
+		guiTextureImage, 
+		VK_FORMAT_R8G8B8A8_SRGB, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	);
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
 
+	guiTextureImageView = createImageView(guiTextureImage, VK_FORMAT_R8G8B8A8_SRGB);
 }
 
 void Vulkan::waitIdle() {
