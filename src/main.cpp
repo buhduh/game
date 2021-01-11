@@ -6,6 +6,7 @@
 #include "artemis_memory.hpp"
 #include "renderer.hpp"
 #include "artemis_camera.hpp"
+#include "ui/gui.hpp"
 
 #include "imgui/imgui.h"
 
@@ -33,12 +34,14 @@ int main(void) {
 	StackArena* stackArena = 
 		mainMemory->newStackArena(KILOBYTES(1));
 
-	platform::Window* window = platform::createWindow();
-	platform::initializeInput(window);
+	//platform::initializeInput(window);
 
-	//graphics::Vulkan vulkan = graphics::Vulkan(window);
-	//std::unique_ptr<graphics::Renderer<DEF_RENDERER>> renderer = graphics::makeDefaultRenderer(window);
-	std::unique_ptr<graphics::Renderer<graphics::Vulkan>> renderer = graphics::makeDefaultRenderer(window);
+	std::shared_ptr<platform::Window> window = platform::createWindow();
+	auto renderer = std::shared_ptr<graphics::Renderer>(
+		new graphics::Renderer(window.get())
+	);
+	//TODO? why is gui the only unique?
+	auto gui = std::unique_ptr<ui::GUI>(new ui::GUI(window, renderer));
 
 	IArena* arena = new StupidArena();
 
@@ -51,18 +54,22 @@ int main(void) {
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
-	while(!platform::shouldCloseWindow(window) && run) {
+	while(!platform::shouldCloseWindow(window.get()) && run) {
 		stackArena->reset();	
+		platform::pollEvents();
+
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = 
 			std::chrono::duration<float, std::chrono::seconds::period>(
 				lastTime - currentTime
 			).count();
 		lastTime = currentTime;
-		platform::pollEvents();
+
+		//just a place holder until i know what im doing
+		renderer->newFrame();
+		gui->newFrame();
 
 		auto ubo = constructUBO(stackArena, camera);	
 		//vulkan.drawFrame(ubo);	
 	}
-	platform::destroyWindow(window);
 }

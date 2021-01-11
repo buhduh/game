@@ -32,7 +32,7 @@ namespace platform {
 		glfwGetWindowSize(window, &width, &height);
 	}
 
-	Window* createWindow() {
+	std::shared_ptr<Window> createWindow() {
 		glfwInit();
 		auto monitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -54,7 +54,7 @@ namespace platform {
 			mode->width, mode->height, 
 			mode->refreshRate
 		);
-		return window;
+		return std::shared_ptr<Window>(window, destroyWindow);
 	}
 
 	void keyCallback(

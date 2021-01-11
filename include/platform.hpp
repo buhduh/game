@@ -8,13 +8,14 @@ intended for a simple preprocessor if switch
 #include <vector>
 #include <string>
 #include <stdlib.h>
+#include <memory>
 
 #ifdef __linux__
 #include "platform/linux_platform.hpp"
 #endif
 
 namespace platform {
-	Window* createWindow();
+	std::shared_ptr<Window> createWindow();
 	bool shouldCloseWindow(Window*);
 	void destroyWindow(Window*);
 	void pollEvents();

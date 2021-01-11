@@ -1,8 +1,11 @@
 #TODO Really need to sort these flags out
 
 DIR = $(shell pwd)
+#NOTE, don't forget to add PKG_CONFIG_PATH PKG_CONFIG_PATH := ${VULKAN_SDK}/lib/pkgconfig to env
+#LDLIBS = $(shell pkg-config --static --libs glfw3) $(shell pkg-config --libs vulkan) $(shell pkg-config --libs vulkan)
+LDLIBS = $(shell pkg-config --static --libs glfw3 vulkan)
 export CFLAGS := -std=c++17 -I$(VULKAN_SDK)/include -I$(DIR)/include -I$(HOME)/include -I$(DIR)/third_party/ImGui -DDEBUG
-export LDFLAGS := -Llib -lImGui -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan -lstdc++fs -lpthread
+export LDFLAGS := -Llib -lImGui $(LDLIBS) -lstdc++fs -lpthread
 
 ALL_PLATFORM_SRC = $(shell find src/platform -name "*.cpp")
 

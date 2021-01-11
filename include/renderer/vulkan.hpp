@@ -19,6 +19,11 @@ namespace graphics {
 		void loadGUITextureRGBA32(
 			const std::vector<byte>&, const int&, const int&
 		);
+		void newFrame();
+		void drawGUI(
+			const std::vector<GUIVertex>, 
+			const std::vector<vertex_index_t>
+		);
 		private:
 		const static std::vector<const char*> deviceExtensions;
 		const static size_t MAX_FRAMES_IN_FLIGHT;

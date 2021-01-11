@@ -2,34 +2,31 @@
 #define UI_GUI_HPP
 
 #include <memory>
+#include <vector>
 
 #include "artemis_game.hpp"
 #include "platform.hpp"
 #include "imgui/imgui.h"
 #include "renderer.hpp"
 
-namespace UI {
-
-	struct Vertex {
-		vec2       pos;
-		vec2       uv;
-		uint32_t   col; //R8G8B8A8
-	};
+namespace ui {
 
 	class GUI {
 		public:
 			explicit GUI(
 				std::shared_ptr<platform::Window>, 
-				std::shared_ptr<graphics::Renderer<graphics::Vulkan>>
+				std::shared_ptr<graphics::Renderer>
 			);
+			~GUI();
 			GUI(const GUI&) = delete;
 			GUI(GUI&&) = delete;
 			GUI& operator=(const GUI&) = delete;
+			void newFrame();
 		private:
 			std::shared_ptr<platform::Window> m_window;
-			std::shared_ptr<graphics::Renderer<graphics::Vulkan>> m_renderer;
-			ImGuiIO m_io;
+			std::shared_ptr<graphics::Renderer> m_renderer;
 			void setDisplaySize();
+			ImGuiIO* m_io;
 	};
 };
 #endif

@@ -8,13 +8,16 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp"
 
-typedef glm::vec3 vertex_pos_t;
-typedef glm::vec3 vertex_color_t;
-typedef glm::vec3 vertex_normal_t;
-typedef glm::vec2 vertex_tex_coord_t;
+#include "artemis_game.hpp"
+
+typedef vec3 vertex_pos_t;
+typedef vec3 vertex_color_t;
+typedef vec3 vertex_normal_t;
+typedef vec2 vertex_tex_coord_t;
 typedef uint16_t  vertex_index_t;
 
 //Probably need to deal with alignments...
+//TODO do i need to move this to the render namespace?
 struct Vertex{
 	//Data
 	vertex_pos_t       pos;
