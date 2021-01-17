@@ -29,7 +29,7 @@ namespace graphics {
 	struct GUIVertex {
 		vec2     pos;
 		vec2     uv;
-		uint32_t color; //R8G8B8A8
+		uint32_t col; //R8G8B8A8
 	};
 
 	//Right now, only the gui system is using these.

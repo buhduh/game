@@ -126,7 +126,7 @@ void Vulkan::drawGUI(
 	const std::vector<vertex_index_t> iBuffer
 ) {
 	for(auto v = vBuffer.begin(); v < vBuffer.end(); v++) {
-		STD_LOG("pos.x: " << v->pos.x << " pos.y: " << v->pos.y);
+		//STD_LOG("pos.x: " << v->pos.x << " pos.y: " << v->pos.y);
 	}
 }
 
@@ -743,7 +743,7 @@ void Vulkan::createIndexBuffer() {
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
-void Vulkan::createGPUPipeline() {
+void Vulkan::createGUIPipeline() {
 	assert(swapChainExtent.width != 0 && swapChainExtent.height != 0);
 
 	VkShaderModule vertShaderModule;
@@ -791,7 +791,6 @@ void Vulkan::createGPUPipeline() {
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions = 
 		std::vector<VkVertexInputAttributeDescription>(3);
 
-	//TODO check this shit
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
 	attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
@@ -805,8 +804,7 @@ void Vulkan::createGPUPipeline() {
 	attributeDescriptions[2].binding = 0;
 	attributeDescriptions[2].location = 2;
 	attributeDescriptions[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[2].offset = offsetof(GUIVertex, color);
-	//HERE
+	attributeDescriptions[2].offset = offsetof(GUIVertex, col);
 
 	VkPipelineVertexInputStateCreateInfo vInputInfo = {};
 	vInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -820,6 +818,8 @@ void Vulkan::createGPUPipeline() {
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
+	//depth doesn't really matter, this will always be plastered on the screen in
+	//static location
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;

@@ -70,6 +70,6 @@ int main(void) {
 		gui->newFrame();
 
 		auto ubo = constructUBO(stackArena, camera);	
-		//vulkan.drawFrame(ubo);	
+		renderer->drawFrame(ubo);	
 	}
 }
